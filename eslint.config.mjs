@@ -1,6 +1,9 @@
+ 
 import { dirname } from "path";
 import { fileURLToPath } from "url";
+
 import { FlatCompat } from "@eslint/eslintrc";
+import unusedImportsPlugin from "eslint-plugin-unused-imports";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -10,7 +13,6 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
-  // Next.js recommended rules
   ...compat.extends("next/core-web-vitals", "next/typescript"),
 
   {
@@ -24,9 +26,18 @@ const eslintConfig = [
   },
 
   {
+    plugins: {
+      "unused-imports": unusedImportsPlugin,
+    },
+    files: ["**/*.ts", "**/*.tsx"],
+    languageOptions: {
+      parserOptions: {
+        project: "./tsconfig.json",
+        tsconfigRootDir: __dirname,
+      },
+    },
     rules: {
       // General formatting / style
-      indent: ["error", 2, { SwitchCase: 1 }],
       quotes: ["error", "double", { avoidEscape: true }],
       semi: ["error", "always"],
       "comma-dangle": ["error", "always-multiline"],
@@ -50,9 +61,9 @@ const eslintConfig = [
         "error",
         {
           groups: [
-            "builtin", // fs, path, etc.
-            "external", // node_modules
-            "internal", // e.g. @/components
+            "builtin",
+            "external",
+            "internal",
             ["parent", "sibling", "index"],
           ],
           "newlines-between": "always",
@@ -65,7 +76,7 @@ const eslintConfig = [
         "error",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
-      "no-unused-vars": "off", // disable base rule
+      "no-unused-vars": "off",
       "unused-imports/no-unused-imports": "error",
       "unused-imports/no-unused-vars": [
         "warn",
@@ -79,17 +90,36 @@ const eslintConfig = [
       // TypeScript naming conventions
       "@typescript-eslint/naming-convention": [
         "error",
+
+        // Variables (const, let, var)
         {
-          selector: "variableLike",
+          selector: "variable",
           format: ["camelCase"],
           leadingUnderscore: "allow",
         },
+
+        // Functions (including exported functions)
+        {
+          selector: "function",
+          format: ["PascalCase"],
+        },
+
+        // Types, Interfaces, Classes, Enums
         {
           selector: "typeLike",
           format: ["PascalCase"],
         },
+
+        // Enum members
         {
           selector: "enumMember",
+          format: ["PascalCase"],
+        },
+
+        // Components (functions starting with uppercase)
+        {
+          selector: "variable",
+          types: ["function"],
           format: ["PascalCase"],
         },
       ],
