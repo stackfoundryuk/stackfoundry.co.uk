@@ -91,19 +91,6 @@ const eslintConfig = [
       "@typescript-eslint/naming-convention": [
         "error",
 
-        // Variables (const, let, var)
-        {
-          selector: "variable",
-          format: ["camelCase"],
-          leadingUnderscore: "allow",
-        },
-
-        // Functions (including exported functions)
-        {
-          selector: "function",
-          format: ["PascalCase"],
-        },
-
         // Types, Interfaces, Classes, Enums
         {
           selector: "typeLike",
@@ -113,13 +100,6 @@ const eslintConfig = [
         // Enum members
         {
           selector: "enumMember",
-          format: ["PascalCase"],
-        },
-
-        // Components (functions starting with uppercase)
-        {
-          selector: "variable",
-          types: ["function"],
           format: ["PascalCase"],
         },
       ],
