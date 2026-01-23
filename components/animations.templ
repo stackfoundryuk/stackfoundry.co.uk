@@ -1,0 +1,27 @@
+package components
+
+import "fmt"
+
+templ HeroAnimation() {
+	<div class="absolute inset-0 z-0 pointer-events-none opacity-20 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-gray-700 via-gray-900 to-black"></div>
+	
+	<div class="absolute inset-0 z-0 overflow-hidden opacity-30 font-mono text-xs leading-none select-none"
+		 data-on-load="@get('/api/hero-stream')">
+		
+		<div id="hero_grid" class="grid grid-cols-12 md:grid-cols-24 gap-1 p-2 break-all text-primary/50">
+			for i := 0; i < 100; i++ {
+				<div id={ fmt.Sprintf("cell_%d", i) } class="transition-colors duration-1000">01</div>
+			}
+		</div>
+	</div>
+}
+
+// The tiny fragment we stream back for a single cell update
+templ HexCell(id int, val string, highlight bool) {
+	<div id={ fmt.Sprintf("cell_%d", id) } 
+		 class={ "transition-colors duration-300", 
+		 		templ.KV("text-primary font-bold bg-primary/20", highlight), // Flash effect
+				templ.KV("text-primary/50", !highlight) }>
+		{ val }
+	</div>
+}
