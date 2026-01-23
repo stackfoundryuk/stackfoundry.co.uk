@@ -1,0 +1,67 @@
+/* 1. Fonts first */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100..800&family=Space+Grotesk:wght@300..700&display=swap');
+
+/* 2. Tailwind Core */
+@import "tailwindcss";
+
+/* 3. Plugins */
+@plugin "daisyui";
+
+/* 4. Theme Configuration */
+@theme {
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --font-sans: "JetBrains Mono", monospace;
+}
+
+/* Custom Themes */
+@plugin "daisyui/theme" {
+  name: "stackfoundry";
+  default: true;
+  prefersdark: true;
+  color-scheme: dark;
+
+  /* Molten Orange */
+  --color-primary: oklch(62% 0.23 35);
+  --color-primary-content: oklch(98% 0.01 35);
+  
+  /* Charcoal / Server Rack Black */
+  --color-base-100: oklch(18% 0.02 280);
+  --color-base-200: oklch(15% 0.02 280);
+  --color-base-300: oklch(12% 0.02 280);
+  --color-base-content: oklch(92% 0.01 280);
+
+  /* Accents & Borders */
+  --color-neutral: oklch(25% 0.02 280);
+  --color-neutral-content: oklch(92% 0.01 280);
+  --color-secondary: oklch(55% 0.2 300);
+  --color-accent: oklch(75% 0.18 55);
+
+  /* Brutalist Shapes */
+  --radius-selector: 0rem;
+  --radius-field: 0rem;
+  --radius-box: 0.2rem;
+  --border: 2px;
+}
+
+@plugin "daisyui/theme" {
+  name: "stackfoundry-light";
+  prefersdark: false;
+  color-scheme: light;
+
+  --color-primary: oklch(58% 0.23 35);
+  --color-primary-content: oklch(98% 0.01 35);
+
+  --color-base-100: oklch(95% 0.01 280);
+  --color-base-200: oklch(90% 0.01 280);
+  --color-base-300: oklch(85% 0.02 280);
+  --color-base-content: oklch(15% 0.02 280);
+
+  --color-neutral: oklch(20% 0.02 280);
+  --color-neutral-content: oklch(95% 0.01 280);
+  
+  --radius-selector: 0rem;
+  --radius-field: 0rem;
+  --radius-box: 0.2rem;
+  --border: 2px;
+}

@@ -1,29 +1,80 @@
-# stackfoundry.co.uk
+# StackFoundry
 
-Welcome to the homepage for StackFoundry Ltd, a UK-based software consulting company.
+**Lean Architecture. High-Throughput Systems. Applied Intelligence.**
 
-This site is built with the latest [Next.js](https://nextjs.org), [Chakra UI](https://chakra-ui.com), and [Framer Motion](https://www.framer.com/motion/).
+This is the official homepage for **StackFoundry Ltd**, a UK-based software consulting company specializing in optimizing chaos through rigorous engineering.
+
+## The Architecture
+
+We reject unnecessary complexity. This site is a **Self-Contained System (SCS)** built to demonstrate the power of modern, server-driven architectures.
+
+* **Go (1.23+):** The core logic. Fast, typed, and compiled to a single static binary.
+* **Templ:** Type-safe HTML templating. No runtime parsing errors.
+* **Datastar:** Real-time UI updates via Server-Sent Events (SSE). No heavy client-side hydration or React virtual DOM.
+* **Tailwind CSS:** Utility-first styling, embedded directly into the binary.
+* **AWS Lambda (ARM64):** Deployed as a single function with zero idle costs.
 
 ## Getting Started
 
-To run the development server locally:
+### Prerequisites
+
+* [Go](https://go.dev/) (1.22+)
+* [pnpm](https://pnpm.io/) (for Tailwind)
+* [xc](https://github.com/joerdav/xc) (Task runner)
+
+### Development
+
+1. Install dependencies: `pnpm install` & `go mod download`
+2. Install tools: `go install github.com/a-h/templ/cmd/templ@latest`
+3. Run the suite: `xc dev`
+
+## Tasks
+
+This project uses [xc](https://github.com/joerdav/xc) to manage tasks.
+
+### dev
+
+Starts the development environment. Watches Tailwind and Templ files for changes, and runs the Go server with hot-reload.
 
 ```bash
-pnpm dev
+# 1. Start Tailwind in watch mode (background)
+pnpm watch:css &
+
+# 2. Start Templ generation in watch mode
+# --proxy: Reloads browser when Go server restarts
+# --cmd: Re-runs the binary when Go files change
+templ generate --watch --proxy="http://localhost:8080" --cmd="go run main.go"
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser to view the site.
+### build
 
-You can start editing the homepage by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Compiles the production binary. It minifies CSS, generates templates, and builds a static Go binary optimized for AWS Lambda (Linux ARM64).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+echo "🔥 Forging assets..."
+pnpm build:css
 
-## Learn More
+echo "🔨 Generating templates..."
+templ generate
 
-To learn more about the technologies used:
+echo "📦 Compiling binary (bootstrap)..."
+# AWS Lambda requires the binary to be named 'bootstrap'
+GOOS=linux GOARCH=arm64 go build -tags lambda.norpc -ldflags="-s -w" -o bootstrap main.go
 
-- [Next.js Documentation](https://nextjs.org/docs) – features and API.
-- [Chakra UI Documentation](https://chakra-ui.com/docs) – accessible React components.
-- [Framer Motion Documentation](https://www.framer.com/motion/) – animation library for React.
+echo "🤐 Zipping for AWS..."
+# -j ignores directory paths (junk paths) ensuring bootstrap is at the root of the zip
+zip -j function.zip bootstrap
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) – your feedback and contributions are welcome!
+echo "✅ Ready to deploy: ./function.zip"
+```
+
+### clean
+
+Removes build artifacts and generated files.
+
+```bash
+rm -f bootstrap
+rm -f public/css/output.css
+rm -f components/*_templ.go
+echo "🧹 Workshop cleaned."
+```

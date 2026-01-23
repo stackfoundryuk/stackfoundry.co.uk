@@ -1,36 +1,20 @@
 {
   "name": "stackfoundry.co.uk",
-  "version": "0.1.0",
-  "private": true,
+  "version": "1.0.0",
+  "description": "Stack Foundry LTD website",
+  "main": "main.go",
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
-    "start": "next start",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:css": "tailwindcss -i ./public/css/input.css -o ./public/css/output.css --minify",
+    "watch:css": "tailwindcss -i ./public/css/input.css -o ./public/css/output.css --watch"
   },
-  "dependencies": {
-    "@chakra-ui/icons": "^2.2.4",
-    "@chakra-ui/react": "^2.10.9",
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.1",
-    "@fontsource/inter": "^5.2.8",
-    "framer-motion": "^12.23.22",
-    "next": "15.5.4",
-    "react": "19.1.0",
-    "react-dom": "19.1.0"
-  },
+  "keywords": [],
+  "author": "joe-worsfold",
+  "license": "ISC",
+  "packageManager": "pnpm@10.28.1",
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@typescript-eslint/eslint-plugin": "^8.45.0",
-    "@typescript-eslint/parser": "^8.45.0",
-    "eslint": "^9",
-    "eslint-config-next": "15.5.4",
-    "eslint-plugin-import": "^2.32.0",
-    "eslint-plugin-unused-imports": "^4.2.0",
-    "typescript": "^5"
+    "@tailwindcss/cli": "^4.1.18",
+    "daisyui": "^5.5.14",
+    "tailwindcss": "^4.1.18"
   }
 }
