@@ -2,24 +2,27 @@ package components
 
 templ Base(title string) {
 	<!DOCTYPE html>
-	<html lang="en" data-theme="stackfoundry">
-		<head>
-			<meta charset="UTF-8"/>
-			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			<title>{ title } | StackFoundry</title>
-			<link href="/css/output.css" rel="stylesheet"/>
-			<script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.0-beta.1/bundles/datastar.js"></script>
-		</head>
-		<body class="min-h-screen bg-base-100 text-base-content font-sans antialiased selection:bg-primary selection:text-primary-content flex flex-col">
-			
-			@Header()
+	<html lang="en" data-theme="black" class="scroll-smooth">
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<title>StackFoundry | { title }</title>
+		
+		<link href="/css/output.css" rel="stylesheet"/>
+		<script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.0-beta.1/bundles/datastar.js"></script>
+	</head>
+	
+	<body class="bg-base-100 text-base-content min-h-screen flex flex-col selection:bg-primary selection:text-black"
+		  data-store="{ menuOpen: false }">
+		
+		@Header()
 
-			<main class="flex-grow flex flex-col" id="main_content">
-				{ children... }
-			</main>
+		<main class="flex-grow relative">
+			{ children... }
+		</main>
 
-			@Footer()
-			
-		</body>
+		@Footer()
+
+	</body>
 	</html>
 }
