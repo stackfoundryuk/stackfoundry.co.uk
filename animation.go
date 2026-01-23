@@ -12,12 +12,11 @@ import (
 
 func MatrixRainHandler(w http.ResponseWriter, r *http.Request) {
 	sse := datastar.NewSSE(w, r)
-
 	ticker := time.NewTicker(50 * time.Millisecond)
 	defer ticker.Stop()
 	timeout := time.After(60 * time.Second)
 
-	const TotalCells = 384
+	const totalCells = 768
 
 	for {
 		select {
@@ -26,13 +25,12 @@ func MatrixRainHandler(w http.ResponseWriter, r *http.Request) {
 		case <-timeout:
 			return
 		case <-ticker.C:
-			// Pick ANY cell on the screen
-			cellID := rand.Intn(TotalCells)
-
-			val := fmt.Sprintf("%02X", rand.Intn(255))
-
-			if err := sse.MergeFragmentTempl(components.HexCell(cellID, val, true)); err != nil {
-				return
+			for i := 0; i < 3; i++ {
+				id := rand.Intn(totalCells)
+				val := fmt.Sprintf("%02X", rand.Intn(255))
+				if err := sse.MergeFragmentTempl(components.HexCell(id, val, true)); err != nil {
+					return
+				}
 			}
 		}
 	}

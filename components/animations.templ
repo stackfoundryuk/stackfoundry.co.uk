@@ -6,25 +6,21 @@ import (
 
 templ HeroAnimation() {
 	<div class="absolute inset-0 z-0 bg-base-100/90 pointer-events-none"></div>
-
-	<div class="absolute inset-0 z-0 overflow-hidden font-mono text-xs opacity-20 select-none flex items-center justify-center pointer-events-none"
+	<div class="absolute -inset-10 z-0 overflow-hidden font-mono text-xs select-none flex flex-col justify-center pointer-events-none"
 		 data-on-load="@get('/api/hero-stream')">
-		
-		<div id="hero_grid" class="grid grid-cols-12 md:grid-cols-24 gap-4 w-full h-full content-center px-4">
-			
-            for i := 0; i < 384; i++ {
-				<div id={ fmt.Sprintf("cell_%d", i) } class="transition-colors duration-1000 text-center">00</div>
+		<div id="hero_grid" class="w-full h-full grid grid-cols-12 md:grid-cols-24 lg:grid-cols-32 gap-x-4 gap-y-8 content-around p-4 opacity-60">
+			for i := 0; i < 768; i++ {
+				<div id={ fmt.Sprintf("cell_%d", i) } class="text-base-content/10 transition-colors duration-1000 text-center">00</div>
 			}
-            
 		</div>
 	</div>
 }
 
-templ HexCell(id int, val string, highlight bool) {
+templ HexCell(id int, val string, active bool) {
 	<div id={ fmt.Sprintf("cell_%d", id) } 
-		 class={ "transition-colors duration-500 text-center", 
-		 		templ.KV("text-primary font-bold scale-110", highlight),
-				templ.KV("text-base-content", !highlight) }>
+		 class={ "transition-colors duration-1000 text-center cursor-default", 
+		 		templ.KV("text-primary font-bold opacity-100", active), 
+				templ.KV("text-base-content/10 font-normal opacity-100", !active) }>
 		{ val }
 	</div>
 }
