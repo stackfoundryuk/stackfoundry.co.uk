@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
-	"math/rand"
 	"net/http"
 	"os"
 	"time"
@@ -47,37 +46,7 @@ func main() {
 	})
 
 	// 4. Hero Animation Stream (The Matrix Rain)
-	mux.HandleFunc("/api/hero-stream", func(w http.ResponseWriter, r *http.Request) {
-		sse := datastar.NewSSE(w, r)
-
-		// Update speed: 50ms = rapid tech feel
-		ticker := time.NewTicker(50 * time.Millisecond)
-		defer ticker.Stop()
-
-		// Safety: Stop animating after 30s to save CPU/Battery
-		timeout := time.After(30 * time.Second)
-
-		for {
-			select {
-			case <-r.Context().Done():
-				return // Client closed tab
-			case <-timeout:
-				return // Time limit reached
-			case <-ticker.C:
-				// Pick random cell (0-95)
-				cellID := rand.Intn(96)
-
-				// Generate random hex (e.g. "AF")
-				val := fmt.Sprintf("%02X", rand.Intn(255))
-
-				// Send the update to the client
-				// highlight=true makes it flash briefly
-				if err := sse.MergeFragmentTempl(components.HexCell(cellID, val, true)); err != nil {
-					return
-				}
-			}
-		}
-	})
+	mux.HandleFunc("/api/hero-stream", MatrixRainHandler)
 
 	// 5. Start Server (Lambda or Local)
 	if os.Getenv("AWS_LAMBDA_FUNCTION_NAME") != "" {

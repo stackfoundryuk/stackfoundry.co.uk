@@ -37,13 +37,9 @@ This project uses [xc](https://github.com/joerdav/xc) to manage tasks.
 Starts the development environment. Watches Tailwind and Templ files for changes, and runs the Go server with hot-reload.
 
 ```bash
-# 1. Start Tailwind in watch mode (background)
 pnpm watch:css &
 
-# 2. Start Templ generation in watch mode
-# --proxy: Reloads browser when Go server restarts
-# --cmd: Re-runs the binary when Go files change
-templ generate --watch --proxy="http://localhost:8080" --cmd="go run main.go"
+templ generate --watch --proxy="http://localhost:8080" --cmd="go run ."
 ```
 
 ### build
@@ -51,21 +47,13 @@ templ generate --watch --proxy="http://localhost:8080" --cmd="go run main.go"
 Compiles the production binary. It minifies CSS, generates templates, and builds a static Go binary optimized for AWS Lambda (Linux ARM64).
 
 ```bash
-echo "🔥 Forging assets..."
 pnpm build:css
 
-echo "🔨 Generating templates..."
 templ generate
 
-echo "📦 Compiling binary (bootstrap)..."
-# AWS Lambda requires the binary to be named 'bootstrap'
-GOOS=linux GOARCH=arm64 go build -tags lambda.norpc -ldflags="-s -w" -o bootstrap main.go
+GOOS=linux GOARCH=arm64 go build -tags lambda.norpc -ldflags="-s -w" -o bootstrap .
 
-echo "🤐 Zipping for AWS..."
-# -j ignores directory paths (junk paths) ensuring bootstrap is at the root of the zip
 zip -j function.zip bootstrap
-
-echo "✅ Ready to deploy: ./function.zip"
 ```
 
 ### clean
@@ -76,5 +64,4 @@ Removes build artifacts and generated files.
 rm -f bootstrap
 rm -f public/css/output.css
 rm -f components/*_templ.go
-echo "🧹 Workshop cleaned."
 ```
