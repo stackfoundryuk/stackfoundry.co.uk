@@ -2,23 +2,18 @@ package components
 
 templ ContactForm() {
 	<section id="contact" class="py-24 bg-base-100 border-t-2 border-base-300 relative overflow-hidden">
-		// Decorative Background Grid (Subtle industrial feel)
-		<div class="absolute inset-0 opacity-5 pointer-events-none" 
-			 style="background-image: radial-gradient(#currentColor 1px, transparent 1px); background-size: 20px 20px;">
-		</div>
-
+		<div
+			class="absolute inset-0 opacity-5 pointer-events-none"
+			style="background-image: radial-gradient(#currentColor 1px, transparent 1px); background-size: 20px 20px;"
+		></div>
 		<div class="container mx-auto px-4 max-w-3xl relative z-10">
-			
-			// Header
 			<div class="text-center mb-12">
 				<h2 class="text-4xl md:text-5xl font-display font-bold uppercase mb-4">Forge The Future</h2>
 				<p class="font-mono text-base-content/70 text-lg">Tell us what you're founding.</p>
 			</div>
-
 			// The "Industrial Panel" Container
 			<div id="contact_target" class="bg-base-200 p-2 border-2 border-base-content/10">
 				<div class="bg-base-100 border-2 border-base-content/10 p-6 md:p-10">
-					
 					// Console Header
 					<div class="flex justify-between items-center border-b-2 border-base-content/10 pb-4 mb-8 font-mono text-xs uppercase tracking-widest opacity-60">
 						<span>&#47;&#47; INQUIRY_PROTOCOL_V1</span>
@@ -27,9 +22,7 @@ templ ContactForm() {
 							System Ready
 						</span>
 					</div>
-
 					<form class="flex flex-col gap-8" data-on-submit__prevent="@post('/api/contact')">
-						
 						// Email Field
 						<div class="form-control w-full group">
 							<label class="label font-mono text-xs uppercase font-bold text-primary mb-2 group-focus-within:text-base-content transition-colors">
@@ -43,7 +36,6 @@ templ ContactForm() {
 								class="input input-lg w-full rounded-none border-2 border-base-content/20 bg-base-100 focus:border-primary focus:outline-none transition-colors duration-300 placeholder:text-base-content/20"
 							/>
 						</div>
-
 						// Message Field
 						<div class="form-control w-full group">
 							<label class="label font-mono text-xs uppercase font-bold text-primary mb-2 group-focus-within:text-base-content transition-colors">
@@ -57,12 +49,10 @@ templ ContactForm() {
 								class="textarea textarea-lg w-full rounded-none border-2 border-base-content/20 bg-base-100 focus:border-primary focus:outline-none transition-colors duration-300 placeholder:text-base-content/20 leading-relaxed"
 							></textarea>
 						</div>
-
-						// Action Button
-						<button class="btn btn-primary btn-lg w-full rounded-none font-bold uppercase tracking-widest mt-2 border-2 border-primary hover:bg-transparent hover:text-primary transition-all duration-300 relative overflow-hidden group">
+						// The Loading Bar Button
+						<button class="relative btn btn-lg w-full rounded-none border-2 border-primary bg-transparent text-primary font-bold uppercase tracking-widest mt-2 overflow-hidden group hover:text-base-100 transition-colors duration-300">
 							<span class="relative z-10">Initialize Sequence</span>
-							// Hover effect overlay
-							<div class="absolute inset-0 bg-base-100 translate-y-full group-hover:translate-y-0 transition-transform duration-300 -z-0"></div>
+							<div class="absolute inset-y-0 left-0 w-0 bg-primary group-hover:w-full transition-all duration-500 ease-out z-0"></div>
 						</button>
 					</form>
 				</div>
@@ -71,13 +61,13 @@ templ ContactForm() {
 	</section>
 }
 
-// The Success Message (Maintains the box shape for smoothness)
+// The Success Message
 templ ContactSuccess() {
 	<div id="contact_target" class="bg-base-200 p-2 border-2 border-base-content/10">
 		<div class="bg-base-100 border-2 border-primary/50 p-10 md:p-16 text-center">
 			<div class="inline-block p-4 rounded-full bg-primary/10 text-primary mb-6">
 				<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-					<path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M5 13l4 4L19 7" />
+					<path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M5 13l4 4L19 7"></path>
 				</svg>
 			</div>
 			<h3 class="text-3xl font-display font-bold uppercase text-primary mb-4">Transmission Received.</h3>

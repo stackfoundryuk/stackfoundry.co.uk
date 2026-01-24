@@ -8,23 +8,23 @@ var navHandle = templ.NewOnceHandle()
 templ Header() {
 	@navHandle.Once() {
 		<script>
-			function toggleMobileMenu() {
-				const menu = document.getElementById('mobile-menu');
-				const hamburger = document.getElementById('icon-hamburger');
-				const cross = document.getElementById('icon-cross');
-				if (menu) {
-					if (menu.classList.contains('hidden')) {
-						menu.classList.remove('hidden');
-						menu.classList.add('flex');
-					} else {
-						menu.classList.add('hidden');
-						menu.classList.remove('flex');
-					}
-					if (hamburger) hamburger.classList.toggle('hidden');
-					if (cross) cross.classList.toggle('hidden');
-				}
-			}
-		</script>
+      function toggleMobileMenu() {
+        const menu = document.getElementById('mobile-menu');
+        const hamburger = document.getElementById('icon-hamburger');
+        const cross = document.getElementById('icon-cross');
+        if (menu) {
+          if (menu.classList.contains('hidden')) {
+            menu.classList.remove('hidden');
+            menu.classList.add('flex');
+          } else {
+            menu.classList.add('hidden');
+            menu.classList.remove('flex');
+          }
+          if (hamburger) hamburger.classList.toggle('hidden');
+          if (cross) cross.classList.toggle('hidden');
+        }
+      }
+    </script>
 	}
 	<header class="navbar bg-base-100 border-b-2 border-base-300 sticky top-0 z-50 transition-all duration-300">
 		<div class="navbar-start w-auto">
@@ -44,8 +44,7 @@ templ Header() {
 					stroke-linejoin="miter"
 					class="mr-2"
 				>
-					<path d="M7 10H6a4 4 0 0 1-4-4 1 1 0 0 1 1-1h4"></path>
-					<path d="M7 5a1 1 0 0 1 1-1h13a1 1 0 0 1 1 1 7 7 0 0 1-7 7H8a1 1 0 0 1-1-1z"></path>
+					<path d="M2 7L8 5H22L18 9C16 11 16 12 16 14V16H19V18H5V16H8V14C8 12 8 11 6 9L2 7Z"></path>
 				</svg>
 				Stack<span class="text-base-content">Foundry</span>
 			</a>
@@ -129,16 +128,19 @@ templ Footer() {
 				stroke-linejoin="miter"
 				class="mb-4 opacity-50"
 			>
-				<path d="M7 10H6a4 4 0 0 1-4-4 1 1 0 0 1 1-1h4"></path>
-				<path d="M7 5a1 1 0 0 1 1-1h13a1 1 0 0 1 1 1 7 7 0 0 1-7 7H8a1 1 0 0 1-1-1z"></path>
+				<path d="M2 7L8 5H22L18 9C16 11 16 12 16 14V16H19V18H5V16H8V14C8 12 8 11 6 9L2 7Z"></path>
 			</svg>
-			<p class="font-bold">
+			<p class="font-bold text-sm">
 				Stack Foundry Ltd.
-				<br/>
+			</p>
+			<p class="mb-2">
 				Forging resilient systems since { fmt.Sprintf("%d", time.Now().Year()) }
 			</p>
-			<p class="opacity-50">Registered in England & Wales</p>
-			<nav class="grid grid-flow-col gap-4 mt-4 uppercase tracking-widest">
+			<div class="opacity-50 space-y-1">
+				<p>Registered in England & Wales • No. 16575652</p>
+				<p>20 Wenlock Road, London, N1 7GU</p>
+			</div>
+			<nav class="grid grid-flow-col gap-4 mt-6 uppercase tracking-widest">
 				<a href="/privacy" class="link link-hover hover:text-primary">Privacy Protocol</a>
 				<a href="/#contact" class="link link-hover hover:text-primary">Contact</a>
 			</nav>
