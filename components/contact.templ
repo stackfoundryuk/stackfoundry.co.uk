@@ -3,31 +3,35 @@ package components
 templ ContactForm() {
 	<section id="contact" class="py-20 bg-base-100 border-t-2 border-base-300">
 		<div class="container mx-auto px-4 max-w-2xl">
-			
 			<div class="text-center mb-12">
 				<h2 class="text-4xl font-display font-bold uppercase mb-4">Forge The Future</h2>
 				<p class="font-mono text-base-content/70">Tell us what you're founding.</p>
 			</div>
-
 			<div id="contact_target">
 				<form class="flex flex-col gap-6" data-on-submit__prevent="@post('/api/contact')">
-					
 					<div class="form-control w-full">
 						<label class="label font-mono text-xs uppercase font-bold text-primary">Email</label>
-						<input type="email" name="email" placeholder="you@company.com" required 
-							class="input input-lg rounded-none border-2 border-base-content/20 focus:border-primary focus:outline-none bg-base-200" />
+						<input
+							type="email"
+							name="email"
+							placeholder="you@company.com"
+							required
+							class="input input-lg rounded-none border-2 border-base-content/20 focus:border-primary focus:outline-none bg-base-200"
+						/>
 					</div>
-
 					<div class="form-control w-full">
 						<label class="label font-mono text-xs uppercase font-bold text-primary">Project Details</label>
-						<textarea name="message" placeholder="We need to migrate to Go..." rows="5" required
-							class="textarea textarea-lg rounded-none border-2 border-base-content/20 focus:border-primary focus:outline-none bg-base-200"></textarea>
+						<textarea
+							name="message"
+							placeholder="We need to migrate to Go..."
+							rows="5"
+							required
+							class="textarea textarea-lg rounded-none border-2 border-base-content/20 focus:border-primary focus:outline-none bg-base-200"
+						></textarea>
 					</div>
-
 					<button class="btn btn-primary btn-lg w-full rounded-none font-bold uppercase tracking-widest mt-4">
 						Send Inquiry
 					</button>
-
 				</form>
 			</div>
 		</div>

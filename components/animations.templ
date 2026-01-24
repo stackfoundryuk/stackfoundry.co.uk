@@ -1,26 +1,66 @@
 package components
 
-import (
-	"fmt"
-)
+import "fmt"
+
+var animHandle = templ.NewOnceHandle()
 
 templ HeroAnimation() {
+	@animHandle.Once() {
+		<script>
+            function toggleMobileMenu() {
+                console.log('JWHERE')
+                const menu = document.getElementById('mobile-menu');
+                const hamburger = document.getElementById('icon-hamburger');
+                const cross = document.getElementById('icon-cross');
+                if (menu) {
+                    if (menu.classList.contains('hidden')) {
+                        menu.classList.remove('hidden');
+                        menu.classList.add('flex');
+                    } else {
+                        menu.classList.add('hidden');
+                        menu.classList.remove('flex');
+                    }
+                    if (hamburger) hamburger.classList.toggle('hidden');
+                    if (cross) cross.classList.toggle('hidden');
+                }
+            }
+            document.addEventListener('DOMContentLoaded', function () {
+                const gridToCheck = document.getElementById('hero_grid');
+                if (!gridToCheck) return;
+                const totalCells = 768;
+                const cell = document.getElementById('c0');
+                if (cell) {
+                    cell.classList.remove('text-base-content/10');
+                    cell.classList.add('text-primary', 'font-bold', 'opacity-100');
+                    cell.innerText = 'FF';
+                }
+                setInterval(() => {
+                    for (let i = 0; i < 3; i++) {
+                        const id = Math.floor(Math.random() * totalCells);
+                        const cell = document.getElementById('c' + id);
+                        if (cell) {
+                            const hex = Math.floor(Math.random() * 255).toString(16).toUpperCase().padStart(2, '0');
+                            cell.innerText = hex;
+                            cell.classList.remove('text-base-content/10');
+                            cell.classList.add('text-primary', 'font-bold', 'opacity-100');
+                            setTimeout(() => {
+                                cell.classList.remove('text-primary', 'font-bold', 'opacity-100');
+                                cell.classList.add('text-base-content/10');
+                            }, 200);
+                        }
+                    }
+                }, 50);
+            });
+        </script>
+	}
 	<div class="absolute inset-0 z-0 bg-base-100/90 pointer-events-none"></div>
-	<div class="absolute -inset-10 z-0 overflow-hidden font-mono text-xs select-none flex flex-col justify-center pointer-events-none"
-		 data-on-load="@get('/api/hero-stream')">
+	<div class="absolute -inset-10 z-0 overflow-hidden font-mono text-xs select-none flex flex-col justify-center pointer-events-none">
 		<div id="hero_grid" class="w-full h-full grid grid-cols-12 md:grid-cols-24 lg:grid-cols-32 gap-x-4 gap-y-8 content-around p-4 opacity-60">
 			for i := 0; i < 768; i++ {
-				<div id={ fmt.Sprintf("cell_%d", i) } class="text-base-content/10 transition-colors duration-1000 text-center">00</div>
+				<div id={ fmt.Sprintf("c%d", i) } class="text-base-content/10 transition-colors duration-1000 text-center">
+					00
+				</div>
 			}
 		</div>
-	</div>
-}
-
-templ HexCell(id int, val string, active bool) {
-	<div id={ fmt.Sprintf("cell_%d", id) } 
-		 class={ "transition-colors duration-1000 text-center cursor-default", 
-		 		templ.KV("text-primary font-bold opacity-100", active), 
-				templ.KV("text-base-content/10 font-normal opacity-100", !active) }>
-		{ val }
 	</div>
 }

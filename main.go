@@ -29,7 +29,6 @@ func AnalyticsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
-		// Pass the request down the chain
 		next.ServeHTTP(w, r)
 
 		// Log the hit (CloudWatch will capture this)
@@ -42,7 +41,6 @@ func main() {
 	mux := http.NewServeMux()
 
 	// 1. Static Files (CSS/Images)
-	// We use "GET /css/" to ensure the catch-all doesn't swallow these
 	publicFS, err := fs.Sub(embeddedFiles, "public")
 	if err != nil {
 		log.Fatal(err)
@@ -51,7 +49,6 @@ func main() {
 	mux.Handle("GET /img/", http.FileServer(http.FS(publicFS)))
 
 	// 2. Exact Page Routes
-	// "GET /{$}" matches ONLY the root domain (Go 1.22+)
 	mux.Handle("GET /{$}", templ.Handler(components.Home()))
 
 	// Privacy Policy
@@ -67,20 +64,15 @@ func main() {
 		}
 	})
 
-	// Hero Animation Stream (Calls the function in animation.go)
-	mux.HandleFunc("GET /api/hero-stream", MatrixRainHandler)
-
 	// 4. Catch-All 404
-	// This matches any path not defined above (e.g. /invalid-page)
 	mux.Handle("/", templ.Handler(components.NotFound()))
 
 	// 5. Wrap everything in Analytics
-	// This ensures 404s and valid pages are all logged
 	handler := AnalyticsMiddleware(mux)
 
 	// 6. Start Server (AWS or Local)
 	if os.Getenv("AWS_LAMBDA_FUNCTION_NAME") != "" {
-		log.Println("☁️  StackFoundry: Running in AWS Lambda Mode")
+		log.Println("stackfoundry.co.uk: Running in AWS Lambda Mode")
 		adapter := httpadapter.New(handler)
 		lambda.Start(func(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 			return adapter.ProxyWithContext(ctx, req)

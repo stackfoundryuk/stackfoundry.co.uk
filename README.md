@@ -1,4 +1,4 @@
-# StackFoundry
+# Stack Foundry
 
 **Lean Architecture. High-Throughput Systems. Applied Intelligence.**
 
@@ -18,7 +18,7 @@ We reject unnecessary complexity. This site is a **Self-Contained System (SCS)**
 
 ### Prerequisites
 
-* [Go](https://go.dev/) (1.22+)
+* [Go](https://go.dev/) (1.24+)
 * [pnpm](https://pnpm.io/) (for Tailwind)
 * [xc](https://github.com/joerdav/xc) (Task runner)
 
