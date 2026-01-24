@@ -47,6 +47,8 @@ templ generate --watch --proxy="http://localhost:8080" --cmd="go run ."
 Compiles the production binary. It minifies CSS, generates templates, and builds a static Go binary optimized for AWS Lambda (Linux ARM64).
 
 ```bash
+pnpm install
+
 pnpm build:css
 
 templ generate
@@ -63,5 +65,7 @@ Removes build artifacts and generated files.
 ```bash
 rm -f bootstrap
 rm -f public/css/output.css
+rm -fr node_modules
 rm -f components/*_templ.go
+rm -f function.zip
 ```

@@ -1,75 +1,20 @@
 package components
 
-const rawScripts = `
-<script>
-	function toggleMobileMenu() {
-	  console.log('JWHERE')
-		const menu = document.getElementById('mobile-menu');
-		const hamburger = document.getElementById('icon-hamburger');
-		const cross = document.getElementById('icon-cross');
-		if (menu) {
-			if (menu.classList.contains('hidden')) {
-				menu.classList.remove('hidden');
-				menu.classList.add('flex');
-			} else {
-				menu.classList.add('hidden');
-				menu.classList.remove('flex');
-			}
-			if (hamburger) hamburger.classList.toggle('hidden');
-			if (cross) cross.classList.toggle('hidden');
-		}
-	}
-	document.addEventListener('DOMContentLoaded', function () {
-		const gridToCheck = document.getElementById('hero_grid');
-		if (!gridToCheck) return;
-		const totalCells = 768;
-		const cell = document.getElementById('c0');
-    if (cell) {
-        cell.classList.remove('text-base-content/10');
-        cell.classList.add('text-primary', 'font-bold', 'opacity-100');
-        cell.innerText = 'FF'; // Example hex value
-    }
-		setInterval(() => {
-			for (let i = 0; i < 3; i++) {
-				const id = Math.floor(Math.random() * totalCells);
-				const cell = document.getElementById('c' + id);
-				if (cell) {
-					// Generate random hex value
-					const hex = Math.floor(Math.random() * 255).toString(16).toUpperCase().padStart(2, '0');
-					cell.innerText = hex;
-					// Flash effect
-					cell.classList.remove('text-base-content/10');
-					cell.classList.add('text-primary', 'font-bold', 'opacity-100');
-					setTimeout(() => {
-						cell.classList.remove('text-primary', 'font-bold', 'opacity-100');
-						cell.classList.add('text-base-content/10');
-					}, 200);
-				}
-			}
-		}, 50);
-	});
-</script>
-`
-
 templ Base(title string) {
-<!DOCTYPE html>
-<html lang="en" data-theme="black" class="scroll-smooth">
-
-<head>
-	<meta charset="UTF-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>StackFoundry | { title }</title>
-	<link href="/css/output.css" rel="stylesheet" />
-</head>
-
-<body class="bg-base-100 text-base-content min-h-screen flex flex-col selection:bg-primary selection:text-black">
-	@templ.Raw(rawScripts)
-	@Header()
-	<main class="flex-grow relative">
-		{ children... }
-	</main>
-	@Footer()
-</body>
-
-</html>
+	<!DOCTYPE html>
+	<html lang="en" data-theme="black" class="scroll-smooth">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>StackFoundry | { title }</title>
+			<link href="/css/output.css" rel="stylesheet"/>
+		</head>
+		<body class="bg-base-100 text-base-content min-h-screen flex flex-col selection:bg-primary selection:text-black">
+			@Header()
+			<main class="flex-grow relative">
+				{ children... }
+			</main>
+			@Footer()
+		</body>
+	</html>
 }
