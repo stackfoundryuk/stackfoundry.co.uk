@@ -32,7 +32,9 @@ templ HeroAnimation() {
 
             function igniteCell(cell) {
                 const hex = Math.floor(Math.random() * 255).toString(16).toUpperCase().padStart(2, '0');
-                cell.innerText = hex;
+                if (!cell.classList.contains('no-change')) {
+                    cell.innerText = hex;
+                }
 
                 cell.style.transition = 'none';
                 cell.style.color = `rgba(${WHITE_HOT}, 1)`;
@@ -70,7 +72,7 @@ templ HeroAnimation() {
 					<div class="text-base-content/5">################################</div>
 					for b := 0; b < 4; b++ {
 						for r := 0; r < 2; r++ {
-							<div class="blade text-base-content/5 font-bold">## <span class="text-primary/10">0x</span> <span class="unit text-base-content/5 transition-colors cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 transition-colors cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 transition-colors cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 transition-colors cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 transition-colors cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 transition-colors cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 transition-colors cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 transition-colors cursor-crosshair font-normal">00</span> ##</div>
+                            <div class="blade text-base-content/5 font-bold">## <span class="text-primary/10 unit no-change">0x</span> <span class="unit text-base-content/5 transition-colors cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 transition-colors cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 transition-colors cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 transition-colors cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 transition-colors cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 transition-colors cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 transition-colors cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 transition-colors cursor-crosshair font-normal">00</span> ##</div>
 						}
 						<div class="text-base-content/5">################################</div>
 					}
