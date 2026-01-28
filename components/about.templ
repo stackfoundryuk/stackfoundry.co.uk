@@ -57,10 +57,8 @@ templ About(showExperience bool) {
 					</div>
 				</div>
 			</div>
-
 			if showExperience {
 				<div class="w-full h-px bg-gradient-to-r from-transparent via-base-content/10 to-transparent my-12"></div>
-
 				<div class="relative">
 					<div class="text-center mb-12">
 						<p class="font-mono text-[10px] md:text-xs uppercase tracking-[0.2em] opacity-40">
@@ -70,10 +68,8 @@ templ About(showExperience bool) {
 							Technical leadership delivered by our founder within these organizations:
 						</p>
 					</div>
-
-					<div class="relative w-full group overflow-visible">
-						<!-- Allow overflow so hovered logos can bleed outside their slot -->
-						<div class="flex overflow-visible w-full select-none">
+					<div class="relative w-full group overflow-hidden mask-[linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+						<div class="flex w-full select-none">
 							<div class="flex animate-marquee flex-shrink-0 items-center" style="animation-duration:40s;">
 								@LogoList(employerList)
 							</div>
@@ -81,9 +77,6 @@ templ About(showExperience bool) {
 								@LogoList(employerList)
 							</div>
 						</div>
-						<!-- Gradient overlays (visual fade) instead of mask so overflow is not clipped -->
-						<div class="pointer-events-none absolute inset-y-0 left-0 w-12 lg:w-20 bg-gradient-to-r from-base-100 to-transparent"></div>
-						<div class="pointer-events-none absolute inset-y-0 right-0 w-12 lg:w-20 bg-gradient-to-l from-base-100 to-transparent"></div>
 					</div>
 				</div>
 			}
@@ -92,31 +85,26 @@ templ About(showExperience bool) {
 }
 
 templ LogoList(logos []pastEmployer) {
-		for _, item := range logos {
-			// Container: allow pointer events so individual logos can be hovered.
-			// Increase horizontal spacing and make hover scale apply on :hover (not default).
-			<div class="mx-10 lg:mx-16 flex justify-center items-center opacity-60 grayscale-[30%] contrast-75 transition-all duration-300 hover:grayscale-0 hover:opacity-100 hover:contrast-100 pointer-events-auto relative overflow-visible z-0">
-				
-				if item.DarkLogo != "" {
-					// DarkLogo should be shown in light mode; Logo in dark mode.
-								<img
-								src={ item.DarkLogo }
-								alt={ item.Name + " logo" }
-								class="block dark:hidden h-12 md:h-16 w-auto max-w-[200px] object-contain transition-transform duration-300 transform hover:scale-150 hover:z-50 origin-center will-change-transform"
-								/>
-								<img
-								src={ item.Logo }
-								alt={ item.Name + " logo" }
-								class="hidden dark:block h-12 md:h-16 w-auto max-w-[200px] object-contain transition-transform duration-300 transform hover:scale-150 hover:z-50 origin-center will-change-transform"
-								/>
-				} else {
-					// No dark variant: render the single source in both themes.
-								<img
-								src={ item.Logo }
-								alt={ item.Name + " logo" }
-								class="h-12 md:h-16 w-auto max-w-[200px] object-contain transition-transform duration-300 transform hover:scale-150 hover:z-50 origin-center will-change-transform"
-								/>
-				}
-			</div>
-		}
+	for _, item := range logos {
+		<div class="mx-10 lg:mx-16 py-2 flex justify-center items-center opacity-60 grayscale-[30%] contrast-75 transition-all duration-300 hover:grayscale-0 hover:opacity-100 hover:contrast-100 pointer-events-auto">
+			if item.DarkLogo != "" {
+				<img
+					src={ item.DarkLogo }
+					alt={ item.Name + " logo" }
+					class="block dark:hidden h-12 md:h-16 w-auto max-w-[200px] object-contain transition-transform duration-300 transform hover:scale-125 origin-center will-change-transform"
+				/>
+				<img
+					src={ item.Logo }
+					alt={ item.Name + " logo" }
+					class="hidden dark:block h-12 md:h-16 w-auto max-w-[200px] object-contain transition-transform duration-300 transform hover:scale-125 origin-center will-change-transform"
+				/>
+			} else {
+				<img
+					src={ item.Logo }
+					alt={ item.Name + " logo" }
+					class="h-12 md:h-16 w-auto max-w-[200px] object-contain transition-transform duration-300 transform hover:scale-125 origin-center will-change-transform"
+				/>
+			}
+		</div>
+	}
 }
