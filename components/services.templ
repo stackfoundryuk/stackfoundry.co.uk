@@ -1,6 +1,32 @@
 package components
 
+var servicesHandle = templ.NewOnceHandle()
+
 templ Services() {
+	@servicesHandle.Once() {
+		<script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const buttons = document.querySelectorAll('.contact-cta');
+        
+        buttons.forEach(btn => btn.addEventListener('click', function () {
+          const subject = btn.dataset.subject || '';
+          const message = btn.dataset.message || '';
+          
+          const contactSection = document.getElementById('contact');
+          if (!contactSection) return;
+          contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+          const subjectInput = contactSection.querySelector('[name="subject"]');
+          const messageInput = contactSection.querySelector('[name="message"]');
+          const emailInput = contactSection.querySelector('[name="email"]');
+
+          if (subjectInput) subjectInput.value = subject;
+          if (messageInput) messageInput.value = message;
+          if (emailInput) setTimeout(() => emailInput.focus(), 500);
+        }));
+      });
+    </script>
+	}
 	<section id="services" class="py-24 bg-base-200 border-t-2 border-base-content/5">
 		<div class="container mx-auto px-4">
 			<div class="mb-16 max-w-2xl">
@@ -13,35 +39,59 @@ templ Services() {
 				</p>
 			</div>
 			<div class="grid grid-cols-1 md:grid-cols-3 gap-0 border-t-2 border-l-2 border-base-content/10">
-				<div class="p-10 border-b-2 border-r-2 border-base-content/10 hover:bg-base-100 transition-all group">
+				<div class="p-10 border-b-2 border-r-2 border-base-content/10 hover:bg-base-100 transition-all group flex flex-col">
 					<div class="font-mono text-xs text-primary mb-4 opacity-50 group-hover:opacity-100">01_BUILD</div>
 					<h4 class="text-2xl font-display font-bold uppercase mb-4">Rapid MVP<br/>Delivery</h4>
-					<p class="font-mono text-sm opacity-70 leading-relaxed mb-4">
+					<p class="font-mono text-sm opacity-70 leading-relaxed mb-4 flex-grow">
 						You have the idea; we have the forge. We take you from zero to deployed product in weeks, not months.
 					</p>
-					<p class="font-mono text-xs text-primary/80">
-						&#47;&#47; SaaS-ready, Secure, Scalable, Investor-friendly
+					<p class="font-mono text-xs text-primary/80 mb-6">
+						&#47;&#47; SaaS-ready, Secure, Scalable
 					</p>
+					<button
+						type="button"
+						class="contact-cta btn btn-sm btn-outline btn-primary rounded-none font-mono font-bold uppercase tracking-wider w-full md:w-auto"
+						data-subject="Rapid MVP Delivery"
+						data-message="Hi — I'm a founder looking to validate and ship an MVP. Key goals: [brief]. Please propose next steps and timeline."
+					>
+						Enquire about MVP
+					</button>
 				</div>
-				<div class="p-10 border-b-2 border-r-2 border-base-content/10 hover:bg-base-100 transition-all group">
+				<div class="p-10 border-b-2 border-r-2 border-base-content/10 hover:bg-base-100 transition-all group flex flex-col">
 					<div class="font-mono text-xs text-primary mb-4 opacity-50 group-hover:opacity-100">02_FIX</div>
 					<h4 class="text-2xl font-display font-bold uppercase mb-4">Architecture<br/>Audits</h4>
-					<p class="font-mono text-sm opacity-70 leading-relaxed mb-4">
+					<p class="font-mono text-sm opacity-70 leading-relaxed mb-4 flex-grow">
 						Slow systems? High costs? We dissect your legacy architecture and provide a brutal, honest roadmap to modernize it.
 					</p>
-					<p class="font-mono text-xs text-primary/80">
-						&#47;&#47; Cloud Optimization, Security Review, Reliability
+					<p class="font-mono text-xs text-primary/80 mb-6">
+						&#47;&#47; Cloud Optimization, Security, Reliability
 					</p>
+					<button
+						type="button"
+						class="contact-cta btn btn-sm btn-outline btn-primary rounded-none font-mono font-bold uppercase tracking-wider w-full md:w-auto"
+						data-subject="Architecture Audit"
+						data-message="Hi — I'd like an architecture audit focused on performance, cost and security. Current tech: [brief]. Please propose next steps."
+					>
+						Request an Audit
+					</button>
 				</div>
-				<div class="p-10 border-b-2 border-r-2 border-base-content/10 hover:bg-base-100 transition-all group">
+				<div class="p-10 border-b-2 border-r-2 border-base-content/10 hover:bg-base-100 transition-all group flex flex-col">
 					<div class="font-mono text-xs text-primary mb-4 opacity-50 group-hover:opacity-100">03_LEAD</div>
 					<h4 class="text-2xl font-display font-bold uppercase mb-4">Fractional<br/>Engineering Lead</h4>
-					<p class="font-mono text-sm opacity-70 leading-relaxed mb-4">
+					<p class="font-mono text-sm opacity-70 leading-relaxed mb-4 flex-grow">
 						Embedding senior leadership into your team to enforce coding standards, set up CI/CD pipelines, and mentor junior devs.
 					</p>
-					<p class="font-mono text-xs text-primary/80">
+					<p class="font-mono text-xs text-primary/80 mb-6">
 						&#47;&#47; DevSecOps, Mentoring, Code Quality
 					</p>
+					<button
+						type="button"
+						class="contact-cta btn btn-sm btn-outline btn-primary rounded-none font-mono font-bold uppercase tracking-wider w-full md:w-auto"
+						data-subject="Fractional Engineering Lead"
+						data-message="Hi — I'm looking for fractional engineering leadership to mentor my team, improve delivery and set standards. Team size: [brief]. Please share availability and rates."
+					>
+						Hire a Lead
+					</button>
 				</div>
 			</div>
 		</div>

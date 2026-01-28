@@ -22,7 +22,7 @@ templ ContactForm() {
 							System Ready
 						</span>
 					</div>
-					<form class="flex flex-col gap-8" data-on-submit__prevent="@post('/api/contact')">
+					<form id="contact_form" class="flex flex-col gap-8" data-on-submit__prevent="@post('/api/contact')">
 						// Email Field
 						<div class="form-control w-full group">
 							<label class="label font-mono text-xs uppercase font-bold text-primary mb-2 group-focus-within:text-base-content transition-colors">
@@ -33,6 +33,18 @@ templ ContactForm() {
 								name="email"
 								placeholder="you@company.com"
 								required
+								class="input input-lg w-full rounded-none border-2 border-base-content/20 bg-base-100 focus:border-primary focus:outline-none transition-colors duration-300 placeholder:text-base-content/20"
+							/>
+						</div>
+						// Subject Field
+						<div class="form-control w-full group">
+							<label class="label font-mono text-xs uppercase font-bold text-primary mb-2 group-focus-within:text-base-content transition-colors">
+								Mission
+							</label>
+							<input
+								type="text"
+								name="subject"
+								placeholder="Subject (e.g. Rapid MVP Delivery)"
 								class="input input-lg w-full rounded-none border-2 border-base-content/20 bg-base-100 focus:border-primary focus:outline-none transition-colors duration-300 placeholder:text-base-content/20"
 							/>
 						</div>
