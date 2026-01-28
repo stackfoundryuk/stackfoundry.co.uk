@@ -4,6 +4,8 @@
 
 This is the official homepage for **StackFoundry Ltd**, a UK-based software consulting company specializing in optimizing chaos through rigorous engineering.
 
+- Live site:<https://stackfoundry.co.uk>
+
 ## The Architecture
 
 We reject unnecessary complexity. This site is a **Self-Contained System (SCS)** built to demonstrate the power of modern, server-driven architectures.
