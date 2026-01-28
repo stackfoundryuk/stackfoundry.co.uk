@@ -15,24 +15,17 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/awslabs/aws-lambda-go-api-proxy/httpadapter"
 
-	datastar "github.com/starfederation/datastar/sdk/go"
-
 	"stackfoundry.co.uk/components"
 )
 
 //go:embed public/*
 var embeddedFiles embed.FS
 
-// AnalyticsMiddleware logs every request to stdout/CloudWatch.
-// This is GDPR compliant as it does not store cookies or personal identifiers on the client.
+// AnalyticsMiddleware logs every request.
 func AnalyticsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-
 		next.ServeHTTP(w, r)
-
-		// Log the hit (CloudWatch will capture this)
-		// Format: [METHOD] Path | Duration | UserAgent
 		log.Printf("[%s] %s | %v | %s", r.Method, r.URL.Path, time.Since(start), r.UserAgent())
 	})
 }
@@ -50,18 +43,21 @@ func main() {
 
 	// 2. Exact Page Routes
 	mux.Handle("GET /{$}", templ.Handler(components.Home()))
-
-	// Privacy Policy
 	mux.Handle("GET /privacy", templ.Handler(components.Privacy()))
 
 	// 3. API Routes
-	// Contact Form Logic
-	mux.HandleFunc("GET /api/contact", func(w http.ResponseWriter, r *http.Request) {
-		time.Sleep(500 * time.Millisecond) // UX Delay
-		sse := datastar.NewSSE(w, r)
-		if err := sse.MergeFragmentTempl(components.ContactSuccess()); err != nil {
-			sse.ConsoleError(err)
-		}
+	// Contact Form Logic (HTMX POST)
+	mux.HandleFunc("POST /api/contact", func(w http.ResponseWriter, r *http.Request) {
+		// Artificial delay to show off the "Initialize Sequence" animation
+		time.Sleep(800 * time.Millisecond)
+
+		// Here is where you would normally parse the form:
+		// r.ParseForm()
+		// email := r.FormValue("email")
+		// ... Send to SES ...
+
+		// Render the Success Component to replace the form
+		components.ContactSuccess().Render(r.Context(), w)
 	})
 
 	// 4. Catch-All 404
