@@ -65,3 +65,22 @@
   --radius-box: 0.2rem;
   --border: 2px;
 }
+
+@layer utilities {
+  /* The animation definition */
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-100%); }
+  }
+
+  /* The utility class to apply it */
+  /* 40s determines the speed. Adjust up to slow down, down to speed up */
+  .animate-marquee {
+    animation: marquee 40s linear infinite;
+  }
+  
+  /* Optional: Pause the animation when the user hovers over the area */
+  .group:hover .animate-marquee {
+      animation-play-state: paused;
+  }
+}

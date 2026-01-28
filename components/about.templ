@@ -1,38 +1,118 @@
 package components
 
-templ About() {
-	<section id="about" class="py-20 bg-base-100 border-t-2 border-base-300">
-		<div class="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-			<div>
-				<h2 class="text-xs font-mono font-bold text-primary tracking-widest uppercase mb-4">&#47;&#47; The Operator</h2>
-				<h3 class="text-4xl font-display font-bold uppercase mb-6">
-					Principal Engineering 
-					<br/>
-					on Demand.
-				</h3>
-				<div class="prose font-mono text-sm opacity-80 leading-relaxed space-y-4">
-					<p>
-						StackFoundry is led by a Principal Engineer with a history of building high-throughput systems for national security and commercial sectors.
-					</p>
-					<p>
-						We don't just write code; we design systems that survive contact with the real world. Whether you need to detect disinformation at scale or just get your first SaaS off the ground, we bring the same level of rigor to every commit.
-					</p>
+type pastEmployer struct {
+	Name     string
+	Logo     string
+	DarkLogo string
+}
+
+var employerList = []pastEmployer{
+	{"Flock", "/img/exp/flock.png", ""},
+	{"Infinity Works", "/img/exp/infinityworks.png", ""},
+	{"UK Home Office", "/img/exp/homeoffice.png", "/img/exp/homeofficedark.svg"},
+	{"Imperial College London", "/img/exp/imperial.png", ""},
+	{"Accenture", "/img/exp/accenture.png", "/img/exp/accenturedark.png"},
+	{"Aviva", "/img/exp/avivazero.svg", ""},
+	{"Mott Macdonald", "/img/exp/mottmac.png", ""},
+	{"Convex Insurance", "/img/exp/convex.png", ""},
+}
+
+templ About(showExperience bool) {
+	<section id="about" class="py-20 bg-base-100 border-t-2 border-base-300 transition-colors duration-300">
+		<div class="container mx-auto px-4">
+			// --- (Keep your existing About Content here) ---
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mb-16">
+				<div>
+					<h2 class="text-xs font-mono font-bold text-primary tracking-widest uppercase mb-4">&#47;&#47; The Operator</h2>
+					<h3 class="text-4xl font-display font-bold uppercase mb-6">
+						Principal Engineering 
+						<br/>
+						on Demand.
+					</h3>
+					<div class="prose font-mono text-sm opacity-80 leading-relaxed space-y-4">
+						<p>
+							StackFoundry is led by a Principal Engineer with a history of building high-throughput systems for national security and commercial sectors.
+						</p>
+						<p>
+							We don't just write code; we design systems that survive contact with the real world. Whether you need to detect disinformation at scale or just get your first SaaS off the ground, we bring the same level of rigor to every commit.
+						</p>
+					</div>
+				</div>
+				<div class="grid grid-cols-2 gap-4">
+					<div class="p-6 bg-base-200 border-2 border-base-content/5 hover:border-primary/20 transition-colors">
+						<div class="text-3xl font-display font-bold text-primary mb-1">10+</div>
+						<div class="font-mono text-xs uppercase opacity-70">Years Experience</div>
+					</div>
+					<div class="p-6 bg-base-200 border-2 border-base-content/5 hover:border-primary/20 transition-colors">
+						<div class="text-3xl font-display font-bold text-primary mb-1">100%</div>
+						<div class="font-mono text-xs uppercase opacity-70">Server Side</div>
+					</div>
+					<div class="p-6 bg-base-200 border-2 border-base-content/5 col-span-2 hover:border-primary/20 transition-colors">
+						<div class="text-3xl font-display font-bold text-primary mb-1">Zero</div>
+						<div class="font-mono text-xs uppercase opacity-70">Waste / Bloat</div>
+					</div>
 				</div>
 			</div>
-			<div class="grid grid-cols-2 gap-4">
-				<div class="p-6 bg-base-200 border-2 border-base-content/5">
-					<div class="text-3xl font-display font-bold text-primary mb-1">10+</div>
-					<div class="font-mono text-xs uppercase opacity-70">Years Experience</div>
+
+			if showExperience {
+				<div class="w-full h-px bg-gradient-to-r from-transparent via-base-content/10 to-transparent my-12"></div>
+
+				<div class="relative">
+					<div class="text-center mb-12">
+						<p class="font-mono text-[10px] md:text-xs uppercase tracking-[0.2em] opacity-40">
+							Operational DNA / Prior Engagements
+						</p>
+						<p class="font-mono text-[10px] opacity-30 mt-2 max-w-lg mx-auto">
+							Technical leadership delivered by our founder within these organizations:
+						</p>
+					</div>
+
+					<div class="relative w-full group overflow-visible">
+						<!-- Allow overflow so hovered logos can bleed outside their slot -->
+						<div class="flex overflow-visible w-full select-none">
+							<div class="flex animate-marquee flex-shrink-0 items-center" style="animation-duration:40s;">
+								@LogoList(employerList)
+							</div>
+							<div class="flex animate-marquee flex-shrink-0 items-center" style="animation-duration:40s;">
+								@LogoList(employerList)
+							</div>
+						</div>
+						<!-- Gradient overlays (visual fade) instead of mask so overflow is not clipped -->
+						<div class="pointer-events-none absolute inset-y-0 left-0 w-12 lg:w-20 bg-gradient-to-r from-base-100 to-transparent"></div>
+						<div class="pointer-events-none absolute inset-y-0 right-0 w-12 lg:w-20 bg-gradient-to-l from-base-100 to-transparent"></div>
+					</div>
 				</div>
-				<div class="p-6 bg-base-200 border-2 border-base-content/5">
-					<div class="text-3xl font-display font-bold text-primary mb-1">100%</div>
-					<div class="font-mono text-xs uppercase opacity-70">Server Side</div>
-				</div>
-				<div class="p-6 bg-base-200 border-2 border-base-content/5 col-span-2">
-					<div class="text-3xl font-display font-bold text-primary mb-1">Zero</div>
-					<div class="font-mono text-xs uppercase opacity-70">Waste / Bloat</div>
-				</div>
-			</div>
+			}
 		</div>
 	</section>
+}
+
+templ LogoList(logos []pastEmployer) {
+		for _, item := range logos {
+			// Container: allow pointer events so individual logos can be hovered.
+			// Increase horizontal spacing and make hover scale apply on :hover (not default).
+			<div class="mx-10 lg:mx-16 flex justify-center items-center opacity-60 grayscale-[30%] contrast-75 transition-all duration-300 hover:grayscale-0 hover:opacity-100 hover:contrast-100 pointer-events-auto relative overflow-visible z-0">
+				
+				if item.DarkLogo != "" {
+					// DarkLogo should be shown in light mode; Logo in dark mode.
+								<img
+								src={ item.DarkLogo }
+								alt={ item.Name + " logo" }
+								class="block dark:hidden h-12 md:h-16 w-auto max-w-[200px] object-contain transition-transform duration-300 transform hover:scale-150 hover:z-50 origin-center will-change-transform"
+								/>
+								<img
+								src={ item.Logo }
+								alt={ item.Name + " logo" }
+								class="hidden dark:block h-12 md:h-16 w-auto max-w-[200px] object-contain transition-transform duration-300 transform hover:scale-150 hover:z-50 origin-center will-change-transform"
+								/>
+				} else {
+					// No dark variant: render the single source in both themes.
+								<img
+								src={ item.Logo }
+								alt={ item.Name + " logo" }
+								class="h-12 md:h-16 w-auto max-w-[200px] object-contain transition-transform duration-300 transform hover:scale-150 hover:z-50 origin-center will-change-transform"
+								/>
+				}
+			</div>
+		}
 }
