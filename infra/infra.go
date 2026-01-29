@@ -45,7 +45,13 @@ func NewStackFoundryWebsiteStack(scope constructs.Construct, id string, props *S
 	})
 
 	// 4. LAMBDA FUNCTION
-	fn := awslambda.NewFunction(stack, jsii.String("StackFoundryApp"), &awslambda.FunctionProps{
+	// We define the log group first to control retention and removal policy
+	logGroup := awslogs.NewLogGroup(stack, jsii.String("AppLogs"), &awslogs.LogGroupProps{
+		Retention:     awslogs.RetentionDays_ONE_WEEK,
+		RemovalPolicy: awscdk.RemovalPolicy_DESTROY,
+	})
+
+	fn := awslambda.NewFunction(stack, jsii.String("StackFoundryWebsiteRunner"), &awslambda.FunctionProps{
 		Runtime:      awslambda.Runtime_PROVIDED_AL2023(),
 		Architecture: awslambda.Architecture_ARM_64(),
 		Handler:      jsii.String("bootstrap"),
@@ -55,7 +61,7 @@ func NewStackFoundryWebsiteStack(scope constructs.Construct, id string, props *S
 		Environment: &map[string]*string{
 			"GIN_MODE": jsii.String("release"),
 		},
-		LogRetention: awslogs.RetentionDays_ONE_WEEK,
+		LogGroup: logGroup,
 	})
 
 	// 5. PERMISSIONS (SES)

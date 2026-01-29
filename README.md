@@ -53,6 +53,15 @@ mkdir -p dist
 GOOS=linux GOARCH=arm64 go build -tags lambda.norpc -ldflags="-s -w" -o dist/bootstrap .
 ```
 
+### test
+
+Runs all Go tests across the application and infrastructure.
+
+```bash
+go test -v ./...
+cd infra && go test -v ./...
+```
+
 ### dev
 
 Requires: build
@@ -65,7 +74,7 @@ pnpm watch:css &
 templ generate --watch --proxy="http://localhost:8080" --cmd="go run ."
 ```
 
-### cdk:diff
+### diff
 
 Requires: build
 
@@ -75,14 +84,14 @@ Run a CDK plan/diff to preview infrastructure changes.
 cd infra && cdk diff
 ```
 
-### cdk:deploy
+### deploy
 
-Requires: build
+Requires: test, build
 
 Deploy infrastructure via CDK.
 
 ```bash
-cd infra && cdk deploy --require-approval=never
+cd infra && export NODE_NO_WARNINGS=1 && cdk deploy
 ```
 
 ### clean

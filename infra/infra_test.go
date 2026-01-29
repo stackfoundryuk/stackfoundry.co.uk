@@ -25,15 +25,20 @@ func TestStackFoundryWebsiteStack(t *testing.T) {
 	template := assertions.Template_FromStack(stack, nil)
 
 	// 1. Verify Lambda Function Configuration
-	// We want to ensure it's cheap (128MB) and safe (10s timeout)
+	// Updated expectation: Timeout is now 5 seconds
 	template.HasResourceProperties(jsii.String("AWS::Lambda::Function"), map[string]interface{}{
 		"Runtime":    "provided.al2023",
 		"Handler":    "bootstrap",
 		"MemorySize": 128,
-		"Timeout":    10,
+		"Timeout":    5, // FIX: Updated from 10 to 5 to match main.go
 		"Architectures": []interface{}{
 			"arm64",
 		},
+	})
+
+	// Verify Log Group exists with correct retention
+	template.HasResourceProperties(jsii.String("AWS::Logs::LogGroup"), map[string]interface{}{
+		"RetentionInDays": 7,
 	})
 
 	// 2. Verify Lambda IAM Permissions (SES)
