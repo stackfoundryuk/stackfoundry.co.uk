@@ -1,7 +1,7 @@
 package components
 
-templ NotFound() {
-	@Base("404 // Segfault") {
+templ NotFound(sessionID string) {
+	@Base("404 // Segfault", sessionID) {
 		<div class="min-h-[80vh] flex flex-col items-center justify-center bg-base-100 text-center px-4 relative overflow-hidden">
 			<div class="absolute inset-0 opacity-5 pointer-events-none select-none overflow-hidden font-mono text-xs break-all">
 				404404404404404404404404404404404404404404404404404404404404404404404

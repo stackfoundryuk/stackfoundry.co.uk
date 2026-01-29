@@ -32,6 +32,40 @@ func NewStackFoundryWebsiteStack(scope constructs.Construct, id string, props *S
 		ZoneName: jsii.String(domainNameStr),
 	})
 
+	// 1a. MX Records (Google Workspace)
+	// These ensure your emails keep arriving.
+	awsroute53.NewMxRecord(stack, jsii.String("GoogleMX"), &awsroute53.MxRecordProps{
+		Zone: zone,
+		Values: &[]*awsroute53.MxRecordValue{
+			{Priority: jsii.Number(1), HostName: jsii.String("aspmx.l.google.com.")},
+			{Priority: jsii.Number(5), HostName: jsii.String("alt1.aspmx.l.google.com.")},
+			{Priority: jsii.Number(5), HostName: jsii.String("alt2.aspmx.l.google.com.")},
+			{Priority: jsii.Number(10), HostName: jsii.String("alt3.aspmx.l.google.com.")},
+			{Priority: jsii.Number(10), HostName: jsii.String("alt4.aspmx.l.google.com.")},
+		},
+		Ttl: awscdk.Duration_Minutes(jsii.Number(60)),
+	})
+
+	// 1b. TXT Record (SPF & Google Verification)
+	awsroute53.NewTxtRecord(stack, jsii.String("RootTXT"), &awsroute53.TxtRecordProps{
+		Zone: zone,
+		Values: jsii.Strings(
+			"google-site-verification=_Df0skkdrZbUu8J_u4fePz-mx6RqGF_TdrPkOp0z3A0",
+			"v=spf1 include:_spf.google.com ~all",
+		),
+		Ttl: awscdk.Duration_Minutes(jsii.Number(60)),
+	})
+
+	// 1c. DMARC Record
+	awsroute53.NewTxtRecord(stack, jsii.String("DmarcTXT"), &awsroute53.TxtRecordProps{
+		Zone:       zone,
+		RecordName: jsii.String("_dmarc"),
+		Values: jsii.Strings(
+			"v=DMARC1; p=reject; adkim=r; aspf=r; rua=mailto:dmarc_rua@onsecureserver.net;",
+		),
+		Ttl: awscdk.Duration_Minutes(jsii.Number(60)),
+	})
+
 	// 2. SSL CERTIFICATE
 	cert := awscertificatemanager.NewCertificate(stack, jsii.String("SiteCert"), &awscertificatemanager.CertificateProps{
 		DomainName: jsii.String(domainNameStr),
@@ -45,12 +79,13 @@ func NewStackFoundryWebsiteStack(scope constructs.Construct, id string, props *S
 	})
 
 	// 4. LAMBDA FUNCTION
-	// We define the log group first to control retention and removal policy
+	// Log Group
 	logGroup := awslogs.NewLogGroup(stack, jsii.String("AppLogs"), &awslogs.LogGroupProps{
 		Retention:     awslogs.RetentionDays_ONE_WEEK,
 		RemovalPolicy: awscdk.RemovalPolicy_DESTROY,
 	})
 
+	// Function
 	fn := awslambda.NewFunction(stack, jsii.String("StackFoundryWebsiteRunner"), &awslambda.FunctionProps{
 		Runtime:      awslambda.Runtime_PROVIDED_AL2023(),
 		Architecture: awslambda.Architecture_ARM_64(),
@@ -75,7 +110,9 @@ func NewStackFoundryWebsiteStack(scope constructs.Construct, id string, props *S
 		DefaultIntegration: awsapigatewayv2integrations.NewHttpLambdaIntegration(
 			jsii.String("LambdaIntegration"),
 			fn,
-			nil,
+			&awsapigatewayv2integrations.HttpLambdaIntegrationProps{
+				PayloadFormatVersion: awsapigatewayv2.PayloadFormatVersion_VERSION_1_0(),
+			},
 		),
 		DefaultDomainMapping: &awsapigatewayv2.DomainMappingOptions{
 			DomainName: dn,
@@ -106,7 +143,7 @@ func NewStackFoundryWebsiteStack(scope constructs.Construct, id string, props *S
 				Notification: &awsbudgets.CfnBudget_NotificationProperty{
 					NotificationType:   jsii.String("ACTUAL"),
 					ComparisonOperator: jsii.String("GREATER_THAN"),
-					Threshold:          jsii.Number(80), // 80% of $2.00
+					Threshold:          jsii.Number(80),
 				},
 				Subscribers: []interface{}{
 					&awsbudgets.CfnBudget_SubscriberProperty{
@@ -118,7 +155,7 @@ func NewStackFoundryWebsiteStack(scope constructs.Construct, id string, props *S
 		},
 	})
 
-	// 9. DNS A-RECORD
+	// 9. DNS A-RECORD (Points domain to API Gateway)
 	awsroute53.NewARecord(stack, jsii.String("AliasRecord"), &awsroute53.ARecordProps{
 		Zone: zone,
 		Target: awsroute53.RecordTarget_FromAlias(
@@ -143,7 +180,6 @@ func NewStackFoundryWebsiteStack(scope constructs.Construct, id string, props *S
 func main() {
 	app := awscdk.NewApp(nil)
 
-	// One Account dev and prod website for future changes
 	val := app.Node().TryGetContext(jsii.String("stage"))
 	var stageStr string
 	if val == nil {
@@ -156,7 +192,7 @@ func main() {
 		}
 	}
 
-	stackName := "StackFoundry-" + stageStr
+	stackName := "StackFoundryWebsite-" + stageStr
 
 	NewStackFoundryWebsiteStack(app, stackName, &StackFoundryWebsiteStackProps{
 		awscdk.StackProps{
