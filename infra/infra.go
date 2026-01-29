@@ -49,9 +49,9 @@ func NewStackFoundryWebsiteStack(scope constructs.Construct, id string, props *S
 		Runtime:      awslambda.Runtime_PROVIDED_AL2023(),
 		Architecture: awslambda.Architecture_ARM_64(),
 		Handler:      jsii.String("bootstrap"),
-		Code:         awslambda.Code_FromAsset(jsii.String("../"), nil),
+		Code:         awslambda.Code_FromAsset(jsii.String("../dist"), nil),
 		MemorySize:   jsii.Number(128),
-		Timeout:      awscdk.Duration_Seconds(jsii.Number(10)),
+		Timeout:      awscdk.Duration_Seconds(jsii.Number(5)),
 		Environment: &map[string]*string{
 			"GIN_MODE": jsii.String("release"),
 		},

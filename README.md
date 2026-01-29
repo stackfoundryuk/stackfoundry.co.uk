@@ -36,7 +36,26 @@ We reject unnecessary complexity. This site is a **Self-Contained System (SCS)**
 
 This project uses [xc](https://github.com/joerdav/xc) to manage tasks.
 
+### build
+
+Compiles the production binary. It minifies CSS, generates templates, and builds a static Go binary optimized for AWS Lambda (Linux ARM64) into a 'dist' folder.
+
+```bash
+pnpm install
+pnpm build:css
+templ generate
+
+# Create a clean distribution folder
+rm -rf dist
+mkdir -p dist
+
+# Build the binary directly into 'dist/bootstrap'
+GOOS=linux GOARCH=arm64 go build -tags lambda.norpc -ldflags="-s -w" -o dist/bootstrap .
+```
+
 ### dev
+
+Requires: build
 
 Starts the development environment. Watches Tailwind and Templ files for changes, and runs the Go server with hot-reload.
 
@@ -46,25 +65,9 @@ pnpm watch:css &
 templ generate --watch --proxy="http://localhost:8080" --cmd="go run ."
 ```
 
-Requires: build
-
-### build
-
-Compiles the production binary. It minifies CSS, generates templates, and builds a static Go binary optimized for AWS Lambda (Linux ARM64).
-
-```bash
-pnpm install
-
-pnpm build:css
-
-templ generate
-
-GOOS=linux GOARCH=arm64 go build -tags lambda.norpc -ldflags="-s -w" -o bootstrap .
-
-zip -j function.zip bootstrap
-```
-
 ### cdk:diff
+
+Requires: build
 
 Run a CDK plan/diff to preview infrastructure changes.
 
@@ -72,9 +75,9 @@ Run a CDK plan/diff to preview infrastructure changes.
 cd infra && cdk diff
 ```
 
-Requires: build
-
 ### cdk:deploy
+
+Requires: build
 
 Deploy infrastructure via CDK.
 
@@ -82,27 +85,13 @@ Deploy infrastructure via CDK.
 cd infra && cdk deploy --require-approval=never
 ```
 
-Requires: build
-
-### cdk:apply
-
-Plan and apply infrastructure changes, prompting for confirmation before deployment.
-
-```bash
-cd infra && cdk diff
-read -p "Apply these changes? (y/N) " yn; if [ "$yn" = "y" ]; then cdk deploy --require-approval=never; fi
-```
-
-Requires: build
-
 ### clean
 
 Removes build artifacts and generated files.
 
 ```bash
-rm -f bootstrap
+rm -rf dist
 rm -f public/css/output.css
 rm -fr node_modules
 rm -f components/*_templ.go
-rm -f function.zip
 ```
