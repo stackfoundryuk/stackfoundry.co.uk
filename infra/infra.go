@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/aws/aws-cdk-go/awscdk/v2"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsapigatewayv2"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsapigatewayv2integrations"
@@ -11,6 +13,7 @@ import (
 	"github.com/aws/aws-cdk-go/awscdk/v2/awslogs"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsroute53"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsroute53targets"
+	"github.com/aws/aws-cdk-go/awscdk/v2/awsses"
 	"github.com/aws/constructs-go/constructs/v10"
 	"github.com/aws/jsii-runtime-go"
 )
@@ -32,8 +35,23 @@ func NewStackFoundryWebsiteStack(scope constructs.Construct, id string, props *S
 		ZoneName: jsii.String(domainNameStr),
 	})
 
-	// 1a. MX Records (Google Workspace)
-	// These ensure your emails keep arriving.
+	// 1a. SES Domain Identity
+	sesIdentity := awsses.NewEmailIdentity(stack, jsii.String("SesIdentity"), &awsses.EmailIdentityProps{
+		Identity: awsses.Identity_Domain(jsii.String(domainNameStr)),
+	})
+
+	if sesIdentity.DkimRecords() != nil {
+		for i, record := range *sesIdentity.DkimRecords() {
+			awsroute53.NewCnameRecord(stack, jsii.String(fmt.Sprintf("DKIM%d", i)), &awsroute53.CnameRecordProps{
+				Zone:       zone,
+				RecordName: record.Name,
+				DomainName: record.Value,
+				Ttl:        awscdk.Duration_Minutes(jsii.Number(60)),
+			})
+		}
+	}
+
+	// 1b. MX Records (Google Workspace)
 	awsroute53.NewMxRecord(stack, jsii.String("GoogleMX"), &awsroute53.MxRecordProps{
 		Zone: zone,
 		Values: &[]*awsroute53.MxRecordValue{
@@ -46,17 +64,17 @@ func NewStackFoundryWebsiteStack(scope constructs.Construct, id string, props *S
 		Ttl: awscdk.Duration_Minutes(jsii.Number(60)),
 	})
 
-	// 1b. TXT Record (SPF & Google Verification)
+	// 1c. TXT Record (SPF & Google Verification)
 	awsroute53.NewTxtRecord(stack, jsii.String("RootTXT"), &awsroute53.TxtRecordProps{
 		Zone: zone,
 		Values: jsii.Strings(
 			"google-site-verification=_Df0skkdrZbUu8J_u4fePz-mx6RqGF_TdrPkOp0z3A0",
-			"v=spf1 include:_spf.google.com ~all",
+			"v=spf1 include:_spf.google.com include:amazonses.com ~all",
 		),
 		Ttl: awscdk.Duration_Minutes(jsii.Number(60)),
 	})
 
-	// 1c. DMARC Record
+	// 1d. DMARC Record
 	awsroute53.NewTxtRecord(stack, jsii.String("DmarcTXT"), &awsroute53.TxtRecordProps{
 		Zone:       zone,
 		RecordName: jsii.String("_dmarc"),
@@ -79,13 +97,11 @@ func NewStackFoundryWebsiteStack(scope constructs.Construct, id string, props *S
 	})
 
 	// 4. LAMBDA FUNCTION
-	// Log Group
 	logGroup := awslogs.NewLogGroup(stack, jsii.String("AppLogs"), &awslogs.LogGroupProps{
 		Retention:     awslogs.RetentionDays_ONE_WEEK,
 		RemovalPolicy: awscdk.RemovalPolicy_DESTROY,
 	})
 
-	// Function
 	fn := awslambda.NewFunction(stack, jsii.String("StackFoundryWebsiteRunner"), &awslambda.FunctionProps{
 		Runtime:      awslambda.Runtime_PROVIDED_AL2023(),
 		Architecture: awslambda.Architecture_ARM_64(),
@@ -111,6 +127,7 @@ func NewStackFoundryWebsiteStack(scope constructs.Construct, id string, props *S
 			jsii.String("LambdaIntegration"),
 			fn,
 			&awsapigatewayv2integrations.HttpLambdaIntegrationProps{
+				// Keep Payload 1.0 for HTML rendering compatibility
 				PayloadFormatVersion: awsapigatewayv2.PayloadFormatVersion_VERSION_1_0(),
 			},
 		),

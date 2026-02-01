@@ -142,8 +142,6 @@ func setupRouter() *http.ServeMux {
 }
 
 func handleContact(w http.ResponseWriter, r *http.Request) {
-	time.Sleep(800 * time.Millisecond)
-
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "Failed to parse form", http.StatusBadRequest)
 		return

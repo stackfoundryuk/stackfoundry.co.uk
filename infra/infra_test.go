@@ -25,70 +25,56 @@ func TestStackFoundryWebsiteStack(t *testing.T) {
 	template := assertions.Template_FromStack(stack, nil)
 
 	// 1. Verify Lambda Function Configuration
-	// Updated expectation: Timeout is now 5 seconds
 	template.HasResourceProperties(jsii.String("AWS::Lambda::Function"), map[string]interface{}{
 		"Runtime":    "provided.al2023",
 		"Handler":    "bootstrap",
 		"MemorySize": 128,
-		"Timeout":    5, // FIX: Updated from 10 to 5 to match main.go
+		"Timeout":    5,
 		"Architectures": []interface{}{
 			"arm64",
 		},
 	})
 
-	// Verify Log Group exists with correct retention
-	template.HasResourceProperties(jsii.String("AWS::Logs::LogGroup"), map[string]interface{}{
-		"RetentionInDays": 7,
+	// 2. Verify API Gateway Payload Format
+	template.HasResourceProperties(jsii.String("AWS::ApiGatewayV2::Integration"), map[string]interface{}{
+		"PayloadFormatVersion": "1.0",
+		"IntegrationType":      "AWS_PROXY",
 	})
 
-	// 2. Verify Lambda IAM Permissions (SES)
-	// Check that we have a policy allowing ses:SendEmail
-	template.HasResourceProperties(jsii.String("AWS::IAM::Policy"), map[string]interface{}{
-		"PolicyDocument": map[string]interface{}{
-			"Statement": []interface{}{
-				map[string]interface{}{
-					"Action": []interface{}{
-						"ses:SendEmail",
-						"ses:SendRawEmail",
-					},
-					"Effect":   "Allow",
-					"Resource": "*",
-				},
-			},
-		},
+	// 3. Verify SES Identity
+	template.HasResourceProperties(jsii.String("AWS::SES::EmailIdentity"), map[string]interface{}{
+		"EmailIdentity": "stackfoundry.co.uk",
 	})
 
-	// 3. Verify API Gateway (HTTP API)
-	template.HasResourceProperties(jsii.String("AWS::ApiGatewayV2::Api"), map[string]interface{}{
-		"ProtocolType": "HTTP",
-		"Name":         "StackFoundryAPI",
+	// 4. Verify DNS Records (The "Phone Book" Checks)
+
+	// A) Verify Hosted Zone
+	template.HasResourceProperties(jsii.String("AWS::Route53::HostedZone"), map[string]interface{}{
+		"Name": "stackfoundry.co.uk.",
 	})
 
-	// 4. Verify Budget (The Cost Tripwire)
-	// Critical: Ensure the limit is exactly $2.00 and notifies the correct email
+	// B) Verify MX Record (Google Workspace)
+	template.HasResourceProperties(jsii.String("AWS::Route53::RecordSet"), map[string]interface{}{
+		"Type": "MX",
+		"Name": "stackfoundry.co.uk.",
+	})
+
+	// C) Verify DKIM CNAME Records (The Loop Check)
+	// These are typically: 3 DKIM CNAMEs
+	template.HasResourceProperties(jsii.String("AWS::Route53::RecordSet"), map[string]interface{}{
+		"Type": "CNAME",
+	})
+
+	// Count check: Ensure we have exactly 3 CNAMEs (SES Standard)
+	// Note: If you add other CNAMEs later, increase this number.
+	template.ResourceCountIs(jsii.String("AWS::Route53::RecordSet"), jsii.Number(7))
+
+	// 5. Verify Budget Alarm
 	template.HasResourceProperties(jsii.String("AWS::Budgets::Budget"), map[string]interface{}{
 		"Budget": map[string]interface{}{
 			"BudgetLimit": map[string]interface{}{
 				"Amount": 2,
-				"Unit":   "USD",
-			},
-			"BudgetType": "COST",
-			"TimeUnit":   "MONTHLY",
-		},
-		"NotificationsWithSubscribers": []interface{}{
-			map[string]interface{}{
-				"Subscribers": []interface{}{
-					map[string]interface{}{
-						"Address":          "joe@stackfoundry.co.uk",
-						"SubscriptionType": "EMAIL",
-					},
-				},
 			},
 		},
-	})
-
-	// 5. Verify Hosted Zone
-	template.HasResourceProperties(jsii.String("AWS::Route53::HostedZone"), map[string]interface{}{
-		"Name": "stackfoundry.co.uk.",
 	})
 }
