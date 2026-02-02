@@ -8,6 +8,7 @@ templ Base(title string, sessionID string) {
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			<title>StackFoundry | { title }</title>
 			<meta name="description" content="Forging resilient Full-Stack Systems from spark to scale. Industrial-grade engineering, accelerated by Applied Intelligence."/>
+			<link rel="canonical" href="https://www.stackfoundry.co.uk/"/>
 			<meta property="og:type" content="website"/>
 			<meta property="og:url" content="https://www.stackfoundry.co.uk/"/>
 			<meta property="og:title" content={ "StackFoundry | " + title }/>
@@ -18,6 +19,26 @@ templ Base(title string, sessionID string) {
 			<meta property="twitter:title" content={ "StackFoundry | " + title }/>
 			<meta property="twitter:description" content="Forging resilient Full-Stack Systems from spark to scale. Industrial-grade engineering, accelerated by Applied Intelligence."/>
 			<meta property="twitter:image" content="https://www.stackfoundry.co.uk/img/anvil-stacks.png"/>
+			<script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "StackFoundry",
+        "url": "https://www.stackfoundry.co.uk",
+        "logo": "https://www.stackfoundry.co.uk/img/anvil-stacks.png",
+        "foundingDate": "2025",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "20 Wenlock Road",
+          "addressLocality": "London",
+          "postalCode": "N1 7GU",
+          "addressCountry": "UK"
+        },
+        "sameAs": [
+          "https://github.com/stackfoundryuk"
+        ]
+      }
+      </script>
 			<link href="/css/output.css" rel="stylesheet"/>
 			<link rel="icon" type="image/svg+xml" href="/img/favicon-stroke.svg?v=2"/>
 			<script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>

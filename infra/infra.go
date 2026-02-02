@@ -70,7 +70,7 @@ func NewStackFoundryWebsiteStack(scope constructs.Construct, id string, props *S
 	awsroute53.NewTxtRecord(stack, jsii.String("RootTXT"), &awsroute53.TxtRecordProps{
 		Zone: zone,
 		Values: jsii.Strings(
-			"google-site-verification=_Df0skkdrZbUu8J_u4fePz-mx6RqGF_TdrPkOp0z3A0",
+			"google-site-verification=nDMy1gRptn4Fvl43a1V_zOY2IHRNadtbViKZvDltHnI",
 			"v=spf1 include:_spf.google.com include:amazonses.com ~all",
 		),
 		Ttl: awscdk.Duration_Minutes(jsii.Number(60)),

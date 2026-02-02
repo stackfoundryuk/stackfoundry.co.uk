@@ -6,6 +6,7 @@ import (
 	"embed"
 	"encoding/hex"
 	"fmt"
+	"io"
 	"io/fs"
 	"log/slog"
 	"net/http"
@@ -109,6 +110,24 @@ func RenderHTML(w http.ResponseWriter, r *http.Request, component templ.Componen
 	component.Render(r.Context(), w)
 }
 
+// serveEmbeddedFile is a helper to serve a single file from the embedded FS
+// with the correct Content-Type.
+func serveEmbeddedFile(w http.ResponseWriter, r *http.Request, fsys fs.FS, path string, contentType string) {
+	file, err := fsys.Open(path)
+	if err != nil {
+		slog.Error("file_missing", slog.String("path", path), slog.Any("error", err))
+		http.NotFound(w, r)
+		return
+	}
+	defer file.Close()
+
+	w.Header().Set("Content-Type", contentType)
+
+	if _, err := io.Copy(w, file); err != nil {
+		slog.Error("file_serve_failed", slog.String("path", path), slog.Any("error", err))
+	}
+}
+
 func setupRouter() *http.ServeMux {
 	mux := http.NewServeMux()
 
@@ -116,10 +135,34 @@ func setupRouter() *http.ServeMux {
 	if err != nil {
 		slog.Error("assets_missing", slog.Any("error", err))
 	} else {
+		// Serve static assets (CSS/IMG)
 		mux.Handle("GET /css/", http.FileServer(http.FS(publicFS)))
 		mux.Handle("GET /img/", http.FileServer(http.FS(publicFS)))
+
+		// --- SEO & AI HANDLERS (Served from Files) ---
+
+		// 1. SITEMAP
+		mux.HandleFunc("GET /sitemap.xml", func(w http.ResponseWriter, r *http.Request) {
+			serveEmbeddedFile(w, r, publicFS, "sitemap.xml", "application/xml")
+		})
+
+		// 2. ROBOTS.TXT
+		mux.HandleFunc("GET /robots.txt", func(w http.ResponseWriter, r *http.Request) {
+			serveEmbeddedFile(w, r, publicFS, "robots.txt", "text/plain")
+		})
+
+		// 3. LLMS.TXT (The main AI directive file)
+		mux.HandleFunc("GET /llms.txt", func(w http.ResponseWriter, r *http.Request) {
+			serveEmbeddedFile(w, r, publicFS, "llms.txt", "text/plain; charset=utf-8")
+		})
+
+		// 4. LLM.TXT (Redirect to plural standard)
+		mux.HandleFunc("GET /llm.txt", func(w http.ResponseWriter, r *http.Request) {
+			http.Redirect(w, r, "/llms.txt", http.StatusMovedPermanently)
+		})
 	}
 
+	// Page Routes
 	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
 		sessionID, _ := r.Context().Value(SessionKey).(string)
 		RenderHTML(w, r, components.Home(sessionID))
@@ -130,8 +173,10 @@ func setupRouter() *http.ServeMux {
 		RenderHTML(w, r, components.Privacy(sessionID))
 	})
 
+	// API Routes
 	mux.HandleFunc("POST /api/contact", handleContact)
 
+	// 404 Handler
 	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		sessionID, _ := r.Context().Value(SessionKey).(string)
