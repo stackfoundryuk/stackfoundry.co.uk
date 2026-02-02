@@ -69,6 +69,7 @@ templ Header() {
 			<button
 				class="btn btn-ghost btn-circle lg:hidden z-50 relative hover:bg-transparent hover:text-primary"
 				onclick="toggleMobileMenu()"
+				aria-label="Toggle navigation menu"
 			>
 				<svg
 					id="icon-hamburger"
@@ -131,6 +132,10 @@ templ Footer() {
 				<img
 					src="/img/anvil-stacks-small.png"
 					alt="StackFoundry Anvil Logo"
+					width="36"
+					height="36"
+					loading="lazy"
+					decoding="async"
 					class="h-9 w-auto object-contain opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-300"
 				/>
 			</div>
@@ -155,7 +160,7 @@ templ Footer() {
 
 templ ThemeToggle() {
 	<label class="swap swap-rotate btn btn-ghost btn-circle hover:bg-transparent hover:text-primary">
-		<input type="checkbox" class="theme-controller" value="stackfoundry-light"/>
+		<input type="checkbox" class="theme-controller" value="stackfoundry-light" aria-label="Toggle theme"/>
 		<svg
 			class="swap-on h-5 w-5"
 			fill="none"

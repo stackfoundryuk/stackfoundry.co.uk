@@ -1,12 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"crypto/rand"
 	"embed"
 	"encoding/hex"
 	"fmt"
-	"io"
 	"io/fs"
 	"log/slog"
 	"net/http"
@@ -126,19 +126,33 @@ func RenderHTML(w http.ResponseWriter, r *http.Request, component templ.Componen
 	component.Render(r.Context(), w)
 }
 
-// serveEmbeddedFile is a helper to serve a single file from the embedded FS
-// with the correct Content-Type.
+// serveEmbeddedFile serves a single file with safe caching rules
 func serveEmbeddedFile(w http.ResponseWriter, r *http.Request, fsys fs.FS, path string, contentType string) {
-	file, err := fsys.Open(path)
+	// 1. Read file into memory (Safe for small files like sitemap/robots)
+	data, err := fs.ReadFile(fsys, path)
 	if err != nil {
 		slog.Error("file_missing", slog.String("path", path), slog.Any("error", err))
 		http.NotFound(w, r)
 		return
 	}
-	defer file.Close()
+
+	// 2. Determine Cache Duration
+	// Default: 1 hour (3600s) for safety
+	cacheAge := 3600
+
+	// SEO/AI Files: 24 hours (86400s)
+	if strings.HasSuffix(path, "sitemap.xml") ||
+		strings.HasSuffix(path, "robots.txt") ||
+		strings.HasSuffix(path, "llms.txt") {
+		cacheAge = 86400
+	}
+
 	w.Header().Set("Content-Type", contentType)
-	w.Header().Set("Cache-Control", "public, max-age=3600")
-	io.Copy(w, file)
+	w.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%d", cacheAge))
+
+	// 3. Serve Content
+	reader := bytes.NewReader(data)
+	http.ServeContent(w, r, path, time.Time{}, reader)
 }
 
 func setupRouter() *http.ServeMux {
@@ -148,31 +162,20 @@ func setupRouter() *http.ServeMux {
 	if err != nil {
 		slog.Error("assets_missing", slog.Any("error", err))
 	} else {
-		// 1. STATIC ASSETS (Images & CSS) -> CACHED 1 YEAR
 		assetHandler := http.FileServer(http.FS(publicFS))
-		mux.Handle("GET /css/", CacheControlMiddleware(assetHandler))
-		mux.Handle("GET /img/", CacheControlMiddleware(assetHandler))
-
-		// 2. JS ASSETS (HTMX) -> CACHED 1 YEAR
-		mux.Handle("GET /js/", CacheControlMiddleware(assetHandler))
-
-		// 3. SITEMAP
-		mux.HandleFunc("GET /sitemap.xml", func(w http.ResponseWriter, r *http.Request) {
+		mux.Handle("/css/", CacheControlMiddleware(assetHandler))
+		mux.Handle("/img/", CacheControlMiddleware(assetHandler))
+		mux.Handle("/js/", CacheControlMiddleware(assetHandler))
+		mux.HandleFunc("/sitemap.xml", func(w http.ResponseWriter, r *http.Request) {
 			serveEmbeddedFile(w, r, publicFS, "sitemap.xml", "application/xml")
 		})
-
-		// 4. ROBOTS.TXT
-		mux.HandleFunc("GET /robots.txt", func(w http.ResponseWriter, r *http.Request) {
+		mux.HandleFunc("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
 			serveEmbeddedFile(w, r, publicFS, "robots.txt", "text/plain")
 		})
-
-		// 5. LLMS.TXT (The main AI directive file)
-		mux.HandleFunc("GET /llms.txt", func(w http.ResponseWriter, r *http.Request) {
+		mux.HandleFunc("/llms.txt", func(w http.ResponseWriter, r *http.Request) {
 			serveEmbeddedFile(w, r, publicFS, "llms.txt", "text/plain; charset=utf-8")
 		})
-
-		// 6. LLM.TXT (Redirect to plural standard)
-		mux.HandleFunc("GET /llm.txt", func(w http.ResponseWriter, r *http.Request) {
+		mux.HandleFunc("/llm.txt", func(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/llms.txt", http.StatusMovedPermanently)
 		})
 	}

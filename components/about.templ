@@ -87,24 +87,36 @@ templ About(showExperience bool) {
 templ LogoList(logos []pastEmployer) {
 	for _, item := range logos {
 		<div class="mx-10 lg:mx-16 py-2 flex justify-center items-center opacity-60 grayscale-[30%] contrast-75 transition-all duration-300 hover:grayscale-0 hover:opacity-100 hover:contrast-100 pointer-events-auto">
-			if item.DarkLogo != "" {
-				<img
-					src={ item.DarkLogo }
-					alt={ item.Name + " logo" }
-					class="block dark:hidden h-12 md:h-16 w-auto max-w-[200px] object-contain transition-transform duration-300 transform hover:scale-125 origin-center will-change-transform"
-				/>
-				<img
-					src={ item.Logo }
-					alt={ item.Name + " logo" }
-					class="hidden dark:block h-12 md:h-16 w-auto max-w-[200px] object-contain transition-transform duration-300 transform hover:scale-125 origin-center will-change-transform"
-				/>
-			} else {
-				<img
-					src={ item.Logo }
-					alt={ item.Name + " logo" }
-					class="h-12 md:h-16 w-auto max-w-[200px] object-contain transition-transform duration-300 transform hover:scale-125 origin-center will-change-transform"
-				/>
-			}
+                if item.DarkLogo != "" {
+                	<img
+                		src={ item.DarkLogo }
+                		alt={ item.Name + " logo" }
+                		width="200"
+                		height="64"
+                		loading="lazy"
+                		decoding="async"
+                		class="block dark:hidden h-12 md:h-16 w-auto max-w-[200px] object-contain transition-transform duration-300 transform hover:scale-125 origin-center will-change-transform"
+                	/>
+                	<img
+                		src={ item.Logo }
+                		alt={ item.Name + " logo" }
+                		width="200"
+                		height="64"
+                		loading="lazy"
+                		decoding="async"
+                		class="hidden dark:block h-12 md:h-16 w-auto max-w-[200px] object-contain transition-transform duration-300 transform hover:scale-125 origin-center will-change-transform"
+                	/>
+            } else {
+                	<img
+                		src={ item.Logo }
+                		alt={ item.Name + " logo" }
+                		width="200"
+                		height="64"
+                		loading="lazy"
+                		decoding="async"
+                		class="h-12 md:h-16 w-auto max-w-[200px] object-contain transition-transform duration-300 transform hover:scale-125 origin-center will-change-transform"
+                	/>
+            }
 		</div>
 	}
 }
