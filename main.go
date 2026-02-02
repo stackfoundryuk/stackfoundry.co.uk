@@ -38,10 +38,16 @@ type ContextKey string
 
 const SessionKey ContextKey = "session_id"
 
-// LoggerMiddleware: Tracks sessions and filters bots
+// LoggerMiddleware: Tracks sessions, filters bots, and adds Security Headers
 func LoggerMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
+
+		// --- SECURITY HEADERS ---
+		w.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+		w.Header().Set("X-Frame-Options", "DENY")
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
 
 		// 1. SESSION ID
 		sessionID := r.Header.Get("X-Session-ID")
@@ -97,9 +103,19 @@ func LoggerMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// CacheControlMiddleware: Forces browsers to cache static assets for 1 year
+func CacheControlMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// "public" = CDN can cache it. "immutable" = content never changes.
+		w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+		next.ServeHTTP(w, r)
+	})
+}
+
 // RenderHTML: Helper for correct headers
 func RenderHTML(w http.ResponseWriter, r *http.Request, component templ.Component) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-cache")
 
 	// Inject Session ID on full page loads so HTMX picks it up
 	if r.Header.Get("HX-Request") == "" {
@@ -120,12 +136,9 @@ func serveEmbeddedFile(w http.ResponseWriter, r *http.Request, fsys fs.FS, path 
 		return
 	}
 	defer file.Close()
-
 	w.Header().Set("Content-Type", contentType)
-
-	if _, err := io.Copy(w, file); err != nil {
-		slog.Error("file_serve_failed", slog.String("path", path), slog.Any("error", err))
-	}
+	w.Header().Set("Cache-Control", "public, max-age=3600")
+	io.Copy(w, file)
 }
 
 func setupRouter() *http.ServeMux {
@@ -135,28 +148,30 @@ func setupRouter() *http.ServeMux {
 	if err != nil {
 		slog.Error("assets_missing", slog.Any("error", err))
 	} else {
-		// Serve static assets (CSS/IMG)
-		mux.Handle("GET /css/", http.FileServer(http.FS(publicFS)))
-		mux.Handle("GET /img/", http.FileServer(http.FS(publicFS)))
+		// 1. STATIC ASSETS (Images & CSS) -> CACHED 1 YEAR
+		assetHandler := http.FileServer(http.FS(publicFS))
+		mux.Handle("GET /css/", CacheControlMiddleware(assetHandler))
+		mux.Handle("GET /img/", CacheControlMiddleware(assetHandler))
 
-		// --- SEO & AI HANDLERS (Served from Files) ---
+		// 2. JS ASSETS (HTMX) -> CACHED 1 YEAR
+		mux.Handle("GET /js/", CacheControlMiddleware(assetHandler))
 
-		// 1. SITEMAP
+		// 3. SITEMAP
 		mux.HandleFunc("GET /sitemap.xml", func(w http.ResponseWriter, r *http.Request) {
 			serveEmbeddedFile(w, r, publicFS, "sitemap.xml", "application/xml")
 		})
 
-		// 2. ROBOTS.TXT
+		// 4. ROBOTS.TXT
 		mux.HandleFunc("GET /robots.txt", func(w http.ResponseWriter, r *http.Request) {
 			serveEmbeddedFile(w, r, publicFS, "robots.txt", "text/plain")
 		})
 
-		// 3. LLMS.TXT (The main AI directive file)
+		// 5. LLMS.TXT (The main AI directive file)
 		mux.HandleFunc("GET /llms.txt", func(w http.ResponseWriter, r *http.Request) {
 			serveEmbeddedFile(w, r, publicFS, "llms.txt", "text/plain; charset=utf-8")
 		})
 
-		// 4. LLM.TXT (Redirect to plural standard)
+		// 6. LLM.TXT (Redirect to plural standard)
 		mux.HandleFunc("GET /llm.txt", func(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/llms.txt", http.StatusMovedPermanently)
 		})
