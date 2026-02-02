@@ -31,6 +31,8 @@ func NewStackFoundryWebsiteStack(scope constructs.Construct, id string, props *S
 
 	// 1. DOMAIN & DNS
 	domainNameStr := "stackfoundry.co.uk"
+	wwwDomainNameStr := "www." + domainNameStr
+
 	zone := awsroute53.NewHostedZone(stack, jsii.String("HostedZone"), &awsroute53.HostedZoneProps{
 		ZoneName: jsii.String(domainNameStr),
 	})
@@ -86,13 +88,21 @@ func NewStackFoundryWebsiteStack(scope constructs.Construct, id string, props *S
 
 	// 2. SSL CERTIFICATE
 	cert := awscertificatemanager.NewCertificate(stack, jsii.String("SiteCert"), &awscertificatemanager.CertificateProps{
-		DomainName: jsii.String(domainNameStr),
-		Validation: awscertificatemanager.CertificateValidation_FromDns(zone),
+		DomainName:              jsii.String(domainNameStr),
+		SubjectAlternativeNames: jsii.Strings(wwwDomainNameStr),
+		Validation:              awscertificatemanager.CertificateValidation_FromDns(zone),
 	})
 
-	// 3. API GATEWAY CUSTOM DOMAIN
+	// 3. API GATEWAY CUSTOM DOMAINS
+	// Root Domain
 	dn := awsapigatewayv2.NewDomainName(stack, jsii.String("DN"), &awsapigatewayv2.DomainNameProps{
 		DomainName:  jsii.String(domainNameStr),
+		Certificate: cert,
+	})
+
+	// WWW Domain
+	dnWww := awsapigatewayv2.NewDomainName(stack, jsii.String("DNWww"), &awsapigatewayv2.DomainNameProps{
+		DomainName:  jsii.String(wwwDomainNameStr),
 		Certificate: cert,
 	})
 
@@ -136,6 +146,12 @@ func NewStackFoundryWebsiteStack(scope constructs.Construct, id string, props *S
 		},
 	})
 
+	// Explicitly map the WWW domain to the API as well
+	awsapigatewayv2.NewApiMapping(stack, jsii.String("WwwMapping"), &awsapigatewayv2.ApiMappingProps{
+		Api:        api,
+		DomainName: dnWww,
+	})
+
 	// 7. RATE LIMITING
 	if api.DefaultStage() != nil && api.DefaultStage().Node() != nil && api.DefaultStage().Node().DefaultChild() != nil {
 		cfnStage := api.DefaultStage().Node().DefaultChild().(awsapigatewayv2.CfnStage)
@@ -172,13 +188,26 @@ func NewStackFoundryWebsiteStack(scope constructs.Construct, id string, props *S
 		},
 	})
 
-	// 9. DNS A-RECORD (Points domain to API Gateway)
+	// 9. DNS RECORDS
+	// Root A-Record
 	awsroute53.NewARecord(stack, jsii.String("AliasRecord"), &awsroute53.ARecordProps{
 		Zone: zone,
 		Target: awsroute53.RecordTarget_FromAlias(
 			awsroute53targets.NewApiGatewayv2DomainProperties(
 				dn.RegionalDomainName(),
 				dn.RegionalHostedZoneId(),
+			),
+		),
+	})
+
+	// WWW A-Record
+	awsroute53.NewARecord(stack, jsii.String("AliasRecordWww"), &awsroute53.ARecordProps{
+		Zone:       zone,
+		RecordName: jsii.String("www"),
+		Target: awsroute53.RecordTarget_FromAlias(
+			awsroute53targets.NewApiGatewayv2DomainProperties(
+				dnWww.RegionalDomainName(),
+				dnWww.RegionalHostedZoneId(),
 			),
 		),
 	})
