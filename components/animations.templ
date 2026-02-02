@@ -10,9 +10,10 @@ templ HeroAnimation() {
             if (!grid) return;
 
             const units = grid.getElementsByClassName('unit');
-            const MOLTEN_ORANGE = '255, 127, 42'; 
-            const WHITE_HOT = '255, 255, 255';
-
+            const totalUnits = units.length;
+            const WHITE_HOT = 'rgba(255, 255, 255, 1)';
+            const MOLTEN_ORANGE = 'rgba(255, 127, 42, 1)';
+            
             // 1. Mouse Interaction
             grid.addEventListener('mouseover', function(e) {
                 if (e.target.classList.contains('unit')) {
@@ -21,42 +22,53 @@ templ HeroAnimation() {
             });
 
             // 2. Random Background Animation
-            setInterval(() => {
-                const count = Math.floor(Math.random() * 4) + 1; 
-                for (let i = 0; i < count; i++) {
-                    const randomIndex = Math.floor(Math.random() * units.length);
-                    const cell = units[randomIndex];
-                    if (cell) igniteCell(cell);
+            let lastTime = 0;
+            const interval = 150; // SUPER FAST (Every 0.08s)
+
+            function loop(timestamp) {
+                if (timestamp - lastTime >= interval) {
+                    const count = Math.floor(Math.random() * 3) + 2;
+                    for (let i = 0; i < count; i++) {
+                        const idx = Math.floor(Math.random() * totalUnits);
+                        if (units[idx]) igniteCell(units[idx]);
+                    }
+                    lastTime = timestamp;
                 }
-            }, 80);
+                requestAnimationFrame(loop);
+            }
+            requestAnimationFrame(loop);
 
             function igniteCell(cell) {
-                const hex = Math.floor(Math.random() * 255).toString(16).toUpperCase().padStart(2, '0');
+                // Keep "0x" text stable, scramble numbers
                 if (!cell.classList.contains('no-change')) {
-                    cell.innerText = hex;
+                    const hex = Math.floor(Math.random() * 255).toString(16).toUpperCase().padStart(2, '0');
+                    if (cell.innerText.length === 2) {
+                        cell.innerText = hex;
+                    }
                 }
 
+                // --- STAGE 1: FLASH (White Hot) ---
                 cell.style.transition = 'none';
-                cell.style.color = `rgba(${WHITE_HOT}, 1)`;
-                cell.style.textShadow = `0 0 8px rgba(${WHITE_HOT}, 0.9)`;
+                cell.style.color = WHITE_HOT;
+                cell.style.textShadow = `0 0 12px rgba(255, 255, 255, 1)`; 
                 cell.style.opacity = '1';
-                cell.style.fontWeight = 'bold';
-                
-                void cell.offsetWidth; 
 
-                setTimeout(() => {
-                    cell.style.transition = 'color 0.4s ease-out, text-shadow 0.4s ease-out';
-                    cell.style.color = `rgba(${MOLTEN_ORANGE}, 1)`;
-                    cell.style.textShadow = `0 0 5px rgba(${MOLTEN_ORANGE}, 0.6)`;
-                }, 50);
+                // --- STAGE 2: BURN (Molten Orange) ---
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        cell.style.transition = 'color 0.2s ease-out, text-shadow 0.2s ease-out';
+                        cell.style.color = MOLTEN_ORANGE;
+                        cell.style.textShadow = `0 0 8px rgba(255, 127, 42, 0.9)`;
+                    });
+                });
 
+                // --- STAGE 3: COOL DOWN ---
                 setTimeout(() => {
-                    cell.style.transition = 'color 3.0s ease-in, opacity 3.0s ease-in, font-weight 3.0s ease-in';
-                    cell.style.color = '';
-                    cell.style.textShadow = '';
-                    cell.style.opacity = '';
-                    cell.style.fontWeight = '';
-                }, 800);
+                    cell.style.transition = 'color 3s ease-in, opacity 3s ease-in, text-shadow 3s ease-in';
+                    cell.style.color = '';      
+                    cell.style.textShadow = ''; 
+                    cell.style.opacity = '';    
+                }, 600);
             }
         });
         </script>
@@ -67,12 +79,12 @@ templ HeroAnimation() {
 			id="hero_grid"
 			class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-wrap justify-center content-center gap-3 opacity-60 w-[110vw] h-[120vh] min-w-[420px]"
 		>
-			for s := 0; s < 80; s++ {
+			for s := 0; s < 60; s++ {
 				<div class="stack flex flex-col items-center whitespace-pre text-[10px] leading-none">
 					<div class="text-base-content/5">################################</div>
 					for b := 0; b < 4; b++ {
 						for r := 0; r < 2; r++ {
-                            <div class="blade text-base-content/5 font-bold">## <span class="text-primary/10 unit no-change">0x</span> <span class="unit text-base-content/5 transition-colors cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 transition-colors cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 transition-colors cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 transition-colors cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 transition-colors cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 transition-colors cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 transition-colors cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 transition-colors cursor-crosshair font-normal">00</span> ##</div>
+							<div class="blade text-base-content/5 font-bold">## <span class="text-primary/10 unit no-change cursor-crosshair will-change-[color,opacity]">0x</span> <span class="unit text-base-content/5 cursor-crosshair font-normal will-change-[color,opacity]">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal will-change-[color,opacity]">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal will-change-[color,opacity]">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal will-change-[color,opacity]">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal will-change-[color,opacity]">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal will-change-[color,opacity]">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal will-change-[color,opacity]">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal will-change-[color,opacity]">00</span> ##</div>
 						}
 						<div class="text-base-content/5">################################</div>
 					}

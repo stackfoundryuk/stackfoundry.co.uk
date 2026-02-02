@@ -1,12 +1,13 @@
 package main
 
 import (
-	"bytes"
+	"compress/gzip"
 	"context"
 	"crypto/rand"
 	"embed"
 	"encoding/hex"
 	"fmt"
+	"io"
 	"io/fs"
 	"log/slog"
 	"net/http"
@@ -38,18 +39,50 @@ type ContextKey string
 
 const SessionKey ContextKey = "session_id"
 
-// LoggerMiddleware: Tracks sessions, filters bots, and adds Security Headers
+// --- MIDDLEWARES ---
+
+// GzipMiddleware: Compresses responses if client supports it
+func GzipMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// 1. Check if client supports Gzip
+		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// 2. Wrap the writer
+		w.Header().Set("Content-Encoding", "gzip")
+		gz := gzip.NewWriter(w)
+		defer gz.Close()
+
+		// 3. Serve with GzipWriter
+		gzipWriter := &gzipResponseWriter{Writer: gz, ResponseWriter: w}
+		next.ServeHTTP(gzipWriter, r)
+	})
+}
+
+// Helper struct to wrap ResponseWriter
+type gzipResponseWriter struct {
+	io.Writer
+	http.ResponseWriter
+}
+
+func (w *gzipResponseWriter) Write(b []byte) (int, error) {
+	return w.Writer.Write(b)
+}
+
+// LoggerMiddleware: Tracks sessions, filters bots, Security Headers
 func LoggerMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
-		// --- SECURITY HEADERS ---
+		// SECURITY HEADERS
 		w.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
 		w.Header().Set("X-Frame-Options", "DENY")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
 
-		// 1. SESSION ID
+		// SESSION ID
 		sessionID := r.Header.Get("X-Session-ID")
 		if sessionID == "" {
 			b := make([]byte, 3)
@@ -60,20 +93,17 @@ func LoggerMiddleware(next http.Handler) http.Handler {
 			}
 		}
 
-		// 2. DETECT BOTS
+		// BOT DETECTION
 		ua := r.UserAgent()
-		isBot := strings.Contains(ua, "bot") ||
-			strings.Contains(ua, "validation") ||
-			strings.Contains(ua, "spider")
+		isBot := strings.Contains(ua, "bot") || strings.Contains(ua, "validation") || strings.Contains(ua, "spider")
 
-		// 3. CAPTURE HTMX CONTEXT
+		// HTMX CONTEXT
 		clickedElement := r.Header.Get("HX-Trigger")
 		if clickedElement == "" {
 			clickedElement = "page_load"
 		}
 		currentURL := r.Header.Get("HX-Current-URL")
 
-		// 4. PREPARE CONTEXT & LOGGER
 		ctx := context.WithValue(r.Context(), SessionKey, sessionID)
 		r = r.WithContext(ctx)
 
@@ -81,23 +111,15 @@ func LoggerMiddleware(next http.Handler) http.Handler {
 			slog.String("session", sessionID),
 			slog.String("method", r.Method),
 			slog.String("path", r.URL.Path),
-			slog.String("click", clickedElement),
 		)
 
 		next.ServeHTTP(w, r)
 
-		// 5. LOG (Filter noise)
 		duration := time.Since(start)
-		if isBot {
-			logger.Info("bot_traffic",
-				slog.String("ua", ua),
-				slog.Duration("dur", duration),
-			)
-		} else {
+		if !isBot {
 			logger.Info("human_traffic",
 				slog.String("url_context", currentURL),
 				slog.Duration("dur", duration),
-				slog.String("ua", ua),
 			)
 		}
 	})
@@ -106,66 +128,57 @@ func LoggerMiddleware(next http.Handler) http.Handler {
 // CacheControlMiddleware: Forces browsers to cache static assets for 1 year
 func CacheControlMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// "public" = CDN can cache it. "immutable" = content never changes.
 		w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
 		next.ServeHTTP(w, r)
 	})
 }
 
-// RenderHTML: Helper for correct headers
+// --- RENDERING HELPERS ---
+
 func RenderHTML(w http.ResponseWriter, r *http.Request, component templ.Component) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-cache")
-
-	// Inject Session ID on full page loads so HTMX picks it up
 	if r.Header.Get("HX-Request") == "" {
 		sessionID, _ := r.Context().Value(SessionKey).(string)
 		w.Header().Set("X-Session-ID", sessionID)
 	}
-
 	component.Render(r.Context(), w)
 }
 
-// serveEmbeddedFile serves a single file with safe caching rules
 func serveEmbeddedFile(w http.ResponseWriter, r *http.Request, fsys fs.FS, path string, contentType string) {
-	// 1. Read file into memory (Safe for small files like sitemap/robots)
 	data, err := fs.ReadFile(fsys, path)
 	if err != nil {
-		slog.Error("file_missing", slog.String("path", path), slog.Any("error", err))
 		http.NotFound(w, r)
 		return
 	}
-
-	// 2. Determine Cache Duration
-	// Default: 1 hour (3600s) for safety
+	// SEO/AI Files: 24 hours
 	cacheAge := 3600
-
-	// SEO/AI Files: 24 hours (86400s)
-	if strings.HasSuffix(path, "sitemap.xml") ||
-		strings.HasSuffix(path, "robots.txt") ||
-		strings.HasSuffix(path, "llms.txt") {
+	if strings.HasSuffix(path, "sitemap.xml") || strings.HasSuffix(path, "robots.txt") || strings.HasSuffix(path, "llms.txt") {
 		cacheAge = 86400
 	}
-
 	w.Header().Set("Content-Type", contentType)
 	w.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%d", cacheAge))
 
-	// 3. Serve Content
-	reader := bytes.NewReader(data)
-	http.ServeContent(w, r, path, time.Time{}, reader)
+	// Serve with time.Time{} to rely on Cache-Control
+	http.ServeContent(w, r, path, time.Time{}, strings.NewReader(string(data)))
 }
+
+// --- ROUTER ---
 
 func setupRouter() *http.ServeMux {
 	mux := http.NewServeMux()
-
 	publicFS, err := fs.Sub(embeddedFiles, "public")
 	if err != nil {
 		slog.Error("assets_missing", slog.Any("error", err))
 	} else {
+
+		// 1. STATIC ASSETS -> Cached + Gzipped (Handled by middleware wrapper)
 		assetHandler := http.FileServer(http.FS(publicFS))
 		mux.Handle("/css/", CacheControlMiddleware(assetHandler))
 		mux.Handle("/img/", CacheControlMiddleware(assetHandler))
 		mux.Handle("/js/", CacheControlMiddleware(assetHandler))
+
+		// 2. SEO FILES
 		mux.HandleFunc("/sitemap.xml", func(w http.ResponseWriter, r *http.Request) {
 			serveEmbeddedFile(w, r, publicFS, "sitemap.xml", "application/xml")
 		})
@@ -180,21 +193,20 @@ func setupRouter() *http.ServeMux {
 		})
 	}
 
-	// Page Routes
+	// 3. PAGES
 	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
 		sessionID, _ := r.Context().Value(SessionKey).(string)
 		RenderHTML(w, r, components.Home(sessionID))
 	})
-
 	mux.HandleFunc("GET /privacy", func(w http.ResponseWriter, r *http.Request) {
 		sessionID, _ := r.Context().Value(SessionKey).(string)
 		RenderHTML(w, r, components.Privacy(sessionID))
 	})
 
-	// API Routes
+	// 4. API
 	mux.HandleFunc("POST /api/contact", handleContact)
 
-	// 404 Handler
+	// 404
 	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		sessionID, _ := r.Context().Value(SessionKey).(string)
@@ -229,10 +241,8 @@ func handleContact(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	// Configure JSON Logger
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
-
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("eu-west-2"))
 	if err != nil {
 		slog.Warn("aws_config_failed", slog.Any("error", err))
@@ -241,7 +251,9 @@ func main() {
 	}
 
 	mux := setupRouter()
-	handler := LoggerMiddleware(mux)
+
+	// CHAIN MIDDLEWARE: Logger -> Gzip -> Mux
+	handler := LoggerMiddleware(GzipMiddleware(mux))
 
 	if os.Getenv("AWS_LAMBDA_FUNCTION_NAME") != "" {
 		slog.Info("server_starting", slog.String("mode", "lambda_v1"))
