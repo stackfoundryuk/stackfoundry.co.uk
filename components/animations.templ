@@ -9,66 +9,216 @@ templ HeroAnimation() {
             const grid = document.getElementById('hero_grid');
             if (!grid) return;
 
-            const units = grid.getElementsByClassName('unit');
-            const totalUnits = units.length;
-            const WHITE_HOT = 'rgba(255, 255, 255, 1)';
-            const MOLTEN_ORANGE = 'rgba(255, 127, 42, 1)';
+            // --- PART 1: CHECK FOR REDUCED MOTION PREFERENCE ---
+            // We define this right at the start so we can use it to block animations later.
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            // CACHE DOM ELEMENTS
+            const stackElements = Array.from(grid.getElementsByClassName('stack'));
+            const totalStacks = stackElements.length;
+            const stackUnitsMap = stackElements.map(stack => Array.from(stack.getElementsByClassName('unit')));
+            const allUnits = stackUnitsMap.flat(); 
+
+            // STATE
+            let mode = 'chaos'; 
+            let gridColumns = 0; 
+            let isVisible = true; 
+            let activeDrops = []; 
+
+            // DEFAULTS
+            const DEFAULT_INTERVAL = 133;
+            const config = {
+                interval: DEFAULT_INTERVAL, 
+                minFlashes: 1,     
+                maxFlashes: 3      
+            };
+
+            const PALETTE = {
+                chaos: { flash: '255, 255, 255', glow: '255, 127, 42' },
+                matrix: { flash: '200, 255, 200', glow: '0, 255, 65' }
+            };
+
+            // GEOMETRY ENGINE
+            function updateGridGeometry() {
+                if (totalStacks < 2) return;
+                const top0 = stackElements[0].getBoundingClientRect().top;
+                let cols = 0;
+                for (let i = 0; i < totalStacks; i++) {
+                    if (Math.abs(stackElements[i].getBoundingClientRect().top - top0) < 5) cols++;
+                    else break;
+                }
+                gridColumns = cols;
+            }
+            updateGridGeometry();
             
-            // 1. Mouse Interaction
-            grid.addEventListener('mouseover', function(e) {
-                if (e.target.classList.contains('unit')) {
-                    igniteCell(e.target);
+            let resizeTimer;
+            window.addEventListener('resize', () => { 
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(updateGridGeometry, 200);
+            });
+
+            // PAUSE ENGINE (CPU SAVER)
+            // Updated to also respect Reduced Motion on tab switch
+            document.addEventListener('visibilitychange', () => {
+                isVisible = !document.hidden;
+                if (isVisible && !prefersReducedMotion) requestAnimationFrame(loop); 
+            });
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    isVisible = entry.isIntersecting;
+                    if (isVisible && !prefersReducedMotion) requestAnimationFrame(loop); 
+                });
+            }, { threshold: 0.1 });
+            observer.observe(grid.parentElement);
+
+
+            // --- INTERACTION ---
+            
+            // 1. Mouse Ignite
+            grid.addEventListener('mouseover', (e) => {
+                if (e.target.classList.contains('unit')) igniteCell(e.target, mode);
+            });
+
+            // 2. Global Click Reset
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('#trig_voltage') || e.target.closest('#trig_rabbit')) return;
+                
+                if (mode !== 'chaos' || config.interval !== DEFAULT_INTERVAL) {
+                    mode = 'chaos';
+                    config.interval = DEFAULT_INTERVAL;
+                    activeDrops = []; 
+                    console.log(">> SYSTEM RESET: NORMALIZED");
                 }
             });
 
-            // 2. Random Background Animation
+            // 3. Trigger: Voltage
+            const trigVoltage = document.getElementById('trig_voltage');
+            if (trigVoltage) trigVoltage.addEventListener('click', () => {
+                const s = prompt(`>> OVERRIDE CLOCK (ms) [Default: ${DEFAULT_INTERVAL}]:`, config.interval);
+                if (s) {
+                    const val = parseInt(s);
+                    if (!isNaN(val) && val > 0) config.interval = val;
+                }
+                mode = 'chaos'; 
+            });
+
+            // 4. Trigger: Rabbit
+            const trigRabbit = document.getElementById('trig_rabbit');
+            if (trigRabbit) trigRabbit.addEventListener('click', () => {
+                if (mode === 'matrix') {
+                    mode = 'chaos';
+                    config.interval = DEFAULT_INTERVAL;
+                } else {
+                    mode = 'matrix';
+                    config.interval = 3;
+                    activeDrops = []; 
+                    console.log("%c FOLLOW THE WHITE RABBIT... ", "color: #0F0; background: black; padding:5px; font-weight:bold;");
+                }
+            });
+
+
+            // --- GAME LOOP ---
             let lastTime = 0;
-            const interval = 150; // SUPER FAST (Every 0.08s)
 
             function loop(timestamp) {
-                if (timestamp - lastTime >= interval) {
-                    const count = Math.floor(Math.random() * 3) + 2;
-                    for (let i = 0; i < count; i++) {
-                        const idx = Math.floor(Math.random() * totalUnits);
-                        if (units[idx]) igniteCell(units[idx]);
-                    }
+                if (!isVisible) return; 
+
+                const elapsed = timestamp - lastTime;
+                
+                if (elapsed >= config.interval) {
                     lastTime = timestamp;
+
+                    if (mode === 'chaos') {
+                        // CHAOS MODE
+                        const count = Math.floor(Math.random() * (config.maxFlashes - config.minFlashes + 1)) + config.minFlashes;
+                        for (let i = 0; i < count; i++) {
+                            const unit = allUnits[Math.floor(Math.random() * allUnits.length)];
+                            if (unit) igniteCell(unit, 'chaos');
+                        }
+                    } 
+                    else if (mode === 'matrix') {
+                        // MATRIX MODE
+                        activeDrops = activeDrops.filter(drop => updateDrop(drop, timestamp));
+                        
+                        if (activeDrops.length < 23 && Math.random() > 0.3) {
+                            const startRowLimit = Math.min(totalStacks, gridColumns * 2); 
+                            activeDrops.push({
+                                stackIdx: Math.floor(Math.random() * startRowLimit),
+                                colIdx: Math.floor(Math.random() * 9),
+                                row: 0,
+                                stepTime: Math.floor(Math.random() * 33) + 13,
+                                lastStep: timestamp,
+                                life: 0
+                            });
+                        }
+                    }
                 }
                 requestAnimationFrame(loop);
             }
-            requestAnimationFrame(loop);
 
-            function igniteCell(cell) {
-                // Keep "0x" text stable, scramble numbers
-                if (!cell.classList.contains('no-change')) {
-                    const hex = Math.floor(Math.random() * 255).toString(16).toUpperCase().padStart(2, '0');
-                    if (cell.innerText.length === 2) {
-                        cell.innerText = hex;
+            // --- PART 2: START LOOP ONLY IF MOTION ALLOWED ---
+            if (!prefersReducedMotion) {
+                requestAnimationFrame(loop);
+            }
+
+
+            // --- PHYSICS ---
+            function updateDrop(drop, now) {
+                if (now - drop.lastStep < drop.stepTime) return true; 
+
+                drop.lastStep = now;
+                
+                if (drop.stackIdx < totalStacks) {
+                    const units = stackUnitsMap[drop.stackIdx];
+                    if (units) {
+                        const unitIdx = (drop.row * 9) + drop.colIdx;
+                        if (units[unitIdx]) igniteCell(units[unitIdx], 'matrix');
                     }
                 }
 
-                // --- STAGE 1: FLASH (White Hot) ---
+                drop.row++;
+                drop.life++;
+
+                if (drop.row > 7) {
+                    drop.row = 0;
+                    drop.stackIdx += gridColumns; 
+                }
+
+                if (drop.stackIdx >= totalStacks || drop.life > 50) return false;
+                return true; 
+            }
+
+
+            // --- RENDERER ---
+            function igniteCell(cell, currentMode) {
+                const palette = PALETTE[currentMode];
+
+                if (!cell.classList.contains('no-change') && Math.random() > 0.5) {
+                    const hex = Math.floor(Math.random() * 255).toString(16).toUpperCase().padStart(2, '0');
+                    if (cell.innerText.length === 2) cell.innerText = hex;
+                }
+
                 cell.style.transition = 'none';
-                cell.style.color = WHITE_HOT;
-                cell.style.textShadow = `0 0 12px rgba(255, 255, 255, 1)`; 
+                cell.style.color = `rgba(${palette.flash}, 1)`;
+                cell.style.textShadow = `0 0 10px rgba(${palette.flash}, 1)`;
                 cell.style.opacity = '1';
 
-                // --- STAGE 2: BURN (Molten Orange) ---
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
-                        cell.style.transition = 'color 0.2s ease-out, text-shadow 0.2s ease-out';
-                        cell.style.color = MOLTEN_ORANGE;
-                        cell.style.textShadow = `0 0 8px rgba(255, 127, 42, 0.9)`;
+                        const dur = currentMode === 'matrix' ? '0.2s' : '0.2s';
+                        cell.style.transition = `color ${dur} ease-out, text-shadow ${dur} ease-out`;
+                        cell.style.color = `rgba(${palette.glow}, 1)`;
+                        cell.style.textShadow = `0 0 8px rgba(${palette.glow}, 0.9)`;
                     });
                 });
 
-                // --- STAGE 3: COOL DOWN ---
+                const hold = currentMode === 'matrix' ? 1200 : 600;
                 setTimeout(() => {
-                    cell.style.transition = 'color 3s ease-in, opacity 3s ease-in, text-shadow 3s ease-in';
+                    cell.style.transition = 'color 1s ease-in, opacity 1s ease-in, text-shadow 1s ease-in';
                     cell.style.color = '';      
                     cell.style.textShadow = ''; 
                     cell.style.opacity = '';    
-                }, 600);
+                }, hold);
             }
         });
         </script>
@@ -77,16 +227,23 @@ templ HeroAnimation() {
 	<div class="absolute inset-0 z-0 overflow-hidden font-mono select-none pointer-events-auto">
 		<div
 			id="hero_grid"
+			aria-hidden="true"
 			class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-wrap justify-center content-center gap-3 opacity-60 w-[110vw] h-[120vh] min-w-[420px]"
 		>
-			for s := 0; s < 60; s++ {
+			for s := 0; s < 45; s++ {
 				<div class="stack flex flex-col items-center whitespace-pre text-[10px] leading-none">
 					<div class="text-base-content/5">################################</div>
 					for b := 0; b < 4; b++ {
 						for r := 0; r < 2; r++ {
 							<div class="blade text-base-content/5 font-bold">## <span class="text-primary/10 unit no-change cursor-crosshair will-change-[color,opacity]">0x</span> <span class="unit text-base-content/5 cursor-crosshair font-normal will-change-[color,opacity]">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal will-change-[color,opacity]">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal will-change-[color,opacity]">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal will-change-[color,opacity]">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal will-change-[color,opacity]">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal will-change-[color,opacity]">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal will-change-[color,opacity]">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal will-change-[color,opacity]">00</span> ##</div>
 						}
-						<div class="text-base-content/5">################################</div>
+						if b == 3 && s == 32 {
+							<div class="text-base-content/5">####################### <span id="trig_voltage" class="cursor-pointer hover:text-primary hover:scale-125 transition-transform inline-block">⚡⚡⚡ </span>####</div>
+						} else if b == 3 && s == 33 {
+							<div class="text-base-content/5">######################## <span id="trig_rabbit" class="cursor-pointer hover:text-primary hover:scale-125 transition-transform inline-block">🐇🐇 </span>##</div>
+						} else {
+							<div class="text-base-content/5">################################</div>
+						}
 					}
 				</div>
 			}
