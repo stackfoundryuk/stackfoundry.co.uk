@@ -9,8 +9,6 @@ templ HeroAnimation() {
             const grid = document.getElementById('hero_grid');
             if (!grid) return;
 
-            // --- PART 1: CHECK FOR REDUCED MOTION PREFERENCE ---
-            // We define this right at the start so we can use it to block animations later.
             const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
             // CACHE DOM ELEMENTS
@@ -18,6 +16,13 @@ templ HeroAnimation() {
             const totalStacks = stackElements.length;
             const stackUnitsMap = stackElements.map(stack => Array.from(stack.getElementsByClassName('unit')));
             const allUnits = stackUnitsMap.flat(); 
+
+            // CONFIG: HEX GENERATOR (10-FF, No '00')
+            const HEX_CHARS = [];
+            for (let i = 16; i <= 255; i++) {
+                HEX_CHARS.push(i.toString(16).toUpperCase());
+            }
+            const HEX_LENGTH = HEX_CHARS.length;
 
             // STATE
             let mode = 'chaos'; 
@@ -34,8 +39,18 @@ templ HeroAnimation() {
             };
 
             const PALETTE = {
-                chaos: { flash: '255, 255, 255', glow: '255, 127, 42' },
-                matrix: { flash: '200, 255, 200', glow: '0, 255, 65' }
+                chaos: { 
+                    flashColor: 'rgba(255, 255, 255, 1)', 
+                    flashShadow: '0 0 2px rgba(255, 255, 255, 1)',
+                    glowColor: 'rgba(255, 127, 42, 1)', 
+                    glowShadow: '0 0 4px rgba(255, 127, 42, 0.9)' 
+                },
+                matrix: { 
+                    flashColor: 'rgba(200, 255, 200, 1)', 
+                    flashShadow: '0 0 2px rgba(200, 255, 200, 1)',
+                    glowColor: 'rgba(0, 255, 65, 1)', 
+                    glowShadow: '0 0 4px rgba(0, 255, 65, 0.9)' 
+                }
             };
 
             // GEOMETRY ENGINE
@@ -57,8 +72,7 @@ templ HeroAnimation() {
                 resizeTimer = setTimeout(updateGridGeometry, 200);
             });
 
-            // PAUSE ENGINE (CPU SAVER)
-            // Updated to also respect Reduced Motion on tab switch
+            // PAUSE ENGINE
             document.addEventListener('visibilitychange', () => {
                 isVisible = !document.hidden;
                 if (isVisible && !prefersReducedMotion) requestAnimationFrame(loop); 
@@ -73,13 +87,10 @@ templ HeroAnimation() {
 
 
             // --- INTERACTION ---
-            
-            // 1. Mouse Ignite
             grid.addEventListener('mouseover', (e) => {
                 if (e.target.classList.contains('unit')) igniteCell(e.target, mode);
             });
 
-            // 2. Global Click Reset
             document.addEventListener('click', (e) => {
                 if (e.target.closest('#trig_voltage') || e.target.closest('#trig_rabbit')) return;
                 
@@ -91,7 +102,6 @@ templ HeroAnimation() {
                 }
             });
 
-            // 3. Trigger: Voltage
             const trigVoltage = document.getElementById('trig_voltage');
             if (trigVoltage) trigVoltage.addEventListener('click', () => {
                 const s = prompt(`>> OVERRIDE CLOCK (ms) [Default: ${DEFAULT_INTERVAL}]:`, config.interval);
@@ -102,7 +112,6 @@ templ HeroAnimation() {
                 mode = 'chaos'; 
             });
 
-            // 4. Trigger: Rabbit
             const trigRabbit = document.getElementById('trig_rabbit');
             if (trigRabbit) trigRabbit.addEventListener('click', () => {
                 if (mode === 'matrix') {
@@ -129,7 +138,6 @@ templ HeroAnimation() {
                     lastTime = timestamp;
 
                     if (mode === 'chaos') {
-                        // CHAOS MODE
                         const count = Math.floor(Math.random() * (config.maxFlashes - config.minFlashes + 1)) + config.minFlashes;
                         for (let i = 0; i < count; i++) {
                             const unit = allUnits[Math.floor(Math.random() * allUnits.length)];
@@ -137,7 +145,6 @@ templ HeroAnimation() {
                         }
                     } 
                     else if (mode === 'matrix') {
-                        // MATRIX MODE
                         activeDrops = activeDrops.filter(drop => updateDrop(drop, timestamp));
                         
                         if (activeDrops.length < 23 && Math.random() > 0.3) {
@@ -156,7 +163,6 @@ templ HeroAnimation() {
                 requestAnimationFrame(loop);
             }
 
-            // --- PART 2: START LOOP ONLY IF MOTION ALLOWED ---
             if (!prefersReducedMotion) {
                 requestAnimationFrame(loop);
             }
@@ -193,22 +199,26 @@ templ HeroAnimation() {
             function igniteCell(cell, currentMode) {
                 const palette = PALETTE[currentMode];
 
-                if (!cell.classList.contains('no-change') && Math.random() > 0.5) {
-                    const hex = Math.floor(Math.random() * 255).toString(16).toUpperCase().padStart(2, '0');
-                    if (cell.innerText.length === 2) cell.innerText = hex;
+                if (!cell.classList.contains('no-change')) {
+                    // FORCE CHANGE logic:
+                    // If the cell is currently "00", we force it to change (Math.random is ignored).
+                    // Otherwise, we stick to the 50% scramble chance to save CPU.
+                    if (cell.textContent === '00' || Math.random() > 0.5) {
+                        cell.textContent = HEX_CHARS[Math.floor(Math.random() * HEX_LENGTH)];
+                    }
                 }
 
                 cell.style.transition = 'none';
-                cell.style.color = `rgba(${palette.flash}, 1)`;
-                cell.style.textShadow = `0 0 10px rgba(${palette.flash}, 1)`;
+                cell.style.textShadow = palette.flashShadow;
+                cell.style.color = palette.flashColor;
                 cell.style.opacity = '1';
 
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
                         const dur = currentMode === 'matrix' ? '0.2s' : '0.2s';
                         cell.style.transition = `color ${dur} ease-out, text-shadow ${dur} ease-out`;
-                        cell.style.color = `rgba(${palette.glow}, 1)`;
-                        cell.style.textShadow = `0 0 8px rgba(${palette.glow}, 0.9)`;
+                        cell.style.color = palette.glowColor;
+                        cell.style.textShadow = palette.glowShadow;
                     });
                 });
 
@@ -235,7 +245,7 @@ templ HeroAnimation() {
 					<div class="text-base-content/5">################################</div>
 					for b := 0; b < 4; b++ {
 						for r := 0; r < 2; r++ {
-							<div class="blade text-base-content/5 font-bold">## <span class="text-primary/10 unit no-change cursor-crosshair will-change-[color,opacity]">0x</span> <span class="unit text-base-content/5 cursor-crosshair font-normal will-change-[color,opacity]">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal will-change-[color,opacity]">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal will-change-[color,opacity]">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal will-change-[color,opacity]">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal will-change-[color,opacity]">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal will-change-[color,opacity]">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal will-change-[color,opacity]">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal will-change-[color,opacity]">00</span> ##</div>
+							<div class="blade text-base-content/5 font-bold">## <span class="text-primary/10 unit no-change cursor-crosshair">0x</span> <span class="unit text-base-content/5 cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal">00</span> <span class="unit text-base-content/5 cursor-crosshair font-normal">00</span> ##</div>
 						}
 						if b == 3 && s == 32 {
 							<div class="text-base-content/5">####################### <span id="trig_voltage" class="cursor-pointer hover:text-primary hover:scale-125 transition-transform inline-block">⚡⚡⚡ </span>####</div>
