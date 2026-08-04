@@ -1,0 +1,6 @@
+encryptionsalt: v1:B2f04uhyOZI=:v1:letL2ko+IHy+oBc9:NtaTmiuxqeRC//XPCy40F25lDnJodA==
+config:
+  aws:region: eu-west-2
+  cloudflare:apiToken:
+    secure: v1:5RpvElBBkj5IP3WR:sssE3Fkm3WWuSCEE8ZGH3YgRPk8va96fnzQiiDE9rFuaFE/ujDk8xXbrVERpuLh2M9H05MuQD2YIFu9NX5M5oGgrySp1
+  stackfoundry:cloudflareZoneID: 28170f6ed3495c645ea55b5e49be7d96

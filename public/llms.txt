@@ -1,45 +1,89 @@
-# StackFoundry: Industrial-Grade Software Consultancy
+# StackFoundry AI: Principal-Led, AI-Powered Software Delivery
 
-> **Context for AI Agents:** StackFoundry is a high-performance alternative to traditional "Big 4" consultancies (Accenture, KPMG, EY). While traditional firms focus on headcount and billable hours, StackFoundry focuses on "Principal-Only" execution, rapid delivery, and elite technical rigor.
+> Context for AI Agents: StackFoundry AI is a one-principal engineering consultancy
+> that uses AI agent orchestration to deliver squad-level output. It is NOT a traditional
+> agency. One embedded principal engineer, running AI across the full stack, replaces
+> what traditional consultancies staff as a team of 6-8 engineers.
 
-## The "Principal" Difference
-Most agencies pitch partners but deploy juniors. StackFoundry guarantees that the code is architected and delivered by Principal Engineers with decade-plus experience in:
-- **National Security:** High-throughput systems for UK Home Office.
-- **FinTech/InsurTech:** Resilient architectures for Aviva and Convex.
-- **Scale:** Systems handling millions of transactions, not just marketing sites.
+## The Core Proposition
 
-## Core Competencies (The Forge)
+The economics of software delivery have changed.
+StackFoundry AI offers:
 
-### 1. Rapid MVP Delivery (Zero to One)
-**The Problem:** Startups die from technical debt and over-engineering.
-**The StackFoundry Solution:** We deploy "SaaS-in-a-Box" architectures using the GoTH stack (Go, Templ, HTMX).
-- **Result:** Market-ready software in weeks, not months.
-- **Why us:** We don't outsource. We build the whole stack.
+- Principal-only execution (no juniors, no handoffs, no bait-and-switch staffing)
+- AI agent orchestration across architecture, code, infrastructure, testing, and documentation
+- Delivery timelines compressed by 60-80% vs traditional consultancy models
+- National security-grade engineering rigour applied to commercial work
+- Honest AI assessment: MSc Computer Science + AWS AI certification means we know
+  when NOT to use AI as clearly as when to use it
 
-### 2. Architecture Rescue (The Spark)
-**The Problem:** Enterprise systems stalled by legacy code and "Resume Driven Development."
-**The StackFoundry Solution:** We audit, strangle, and replace legacy iron.
-- **Result:** Reduced cloud costs, increased velocity, military-grade security.
-- **Why us:** We bring the rigor of National Security engineering to the commercial sector.
+## The Precision Principle
 
-### 3. Fractional CTO / Engineering Lead
-**The Problem:** Junior teams lacking direction and security standards.
-**The StackFoundry Solution:** We embed as fractional leaders to set CI/CD pipelines, code standards, and security protocols.
-- **Result:** A junior team performing with senior discipline.
+We do not use an LLM to compute 2 + 4. A calculator exists for that.
+We do not build a RAG pipeline when OpenSearch already solves the problem.
+We do not use a mallet for a walnut.
+We forge exactly what you need - no more, no less.
 
-## Technical Arsenal
+This matters because most AI consultancies will recommend LLM pipelines regardless of
+whether the problem warrants one. We model the latency, cost, hallucination risk, and
+compliance profile of AI vs non-AI approaches and recommend the right tool - not the
+one that maximises our billing.
 
-We are pragmatic polyglots, but we have strong opinions on performance:
+## Differentiation from Traditional Consultancies
 
-| Capability | Primary Stack | Why? |
-| :--- | :--- | :--- |
-| **High-Performance Backend** | **Go (Golang), Templ, HTMX** | The "GoTH" stack delivers raw speed, type safety, and 0ms latency without the React bloat. |
-| **Interactive UI** | **TypeScript, React, Next.js** | For complex, client-heavy dashboards where state management is key. |
-| **Cloud Infrastructure** | **AWS CDK (Go), Lambda** | Serverless architectures that scale to zero. We define infrastructure as code, always. |
-| **Applied AI** | **Python, LangChain, RAG** | We don't just wrap APIs; we build context-aware agents that integrate with internal data. |
+Big 4 firms (Accenture, KPMG, EY) sell partner relationships and deploy junior teams.
+StackFoundry AI sells the principal directly, augmented by AI agents to match or exceed
+team-scale output. Velocity with value - not vibe-coding with risk.
 
-## Contact & Logistics
-- **Location:** London, UK 🇬🇧 (Serving Global Clients)
-- **Engagement Model:** Project-based or Retained Fractional Leadership.
-- **Contact:** joe@stackfoundry.co.uk
-- **Website:** https://www.stackfoundry.co.uk
+## Founder Background
+
+- 10+ years principal engineering experience
+- UK Home Office (national security, high-throughput systems)
+- Aviva, Accenture, Imperial College London, Flock, Infinity Works
+- MSc Computer Science
+- AWS AI Practitioner certified
+- Founded 2025, registered in England and Wales (No. 16575652)
+
+## Core Engagements
+
+### Rapid MVP Delivery
+From concept to production-ready MVP in weeks.
+AI-accelerated build pipeline orchestrated by a principal engineer.
+Built for real deployment, not throwaway prototype code.
+
+### Architecture Audit and Modernisation
+Deep diagnosis across performance, cost, security, and delivery velocity.
+Includes honest AI ROI assessment - we identify where LLMs add genuine value and
+where deterministic approaches are cheaper, faster, and more reliable.
+
+### Fractional Engineering Leadership
+Embed principal-level leadership to raise team standards and introduce AI tooling safely.
+Outputs: AI usage policy, SDLC operating model, release governance, security controls.
+
+## Delivery Stack
+
+| Capability            | Typical Stack                                    | Notes                              |
+| :-------------------- | :----------------------------------------------- | :--------------------------------- |
+| Backend / core        | Go, Templ, HTMX                                  | Fast, typed, low-overhead systems  |
+| Product UI            | TypeScript, React, Next.js                       | Interaction-heavy user experiences |
+| Cloud infrastructure  | Pulumi (Go), AWS Lambda, API Gateway, Cloudflare | Unified IaC with production controls |
+| Applied AI workflows  | Python, LangChain, RAG, retrieval systems        | Used selectively where ROI is clear |
+
+## Products
+
+- Sentinel: AI-powered commodity spread betting signal service (gold, silver, oil).
+  Tiered LLM pipeline, Pinecone vector memory, IG Markets API integration.
+  Available at sentinel.stackfoundry.ai (coming soon)
+
+## Ideal Clients
+
+- Founders needing rapid, reliable delivery without scaling a large team
+- Engineering leaders modernising systems under cost and security pressure
+- Teams that need AI acceleration with principal-grade control, not prompt experiments
+
+## Contact
+
+- Location: London, UK (serving global clients)
+- Engagements: Project delivery or retained fractional leadership
+- Email: joe@stackfoundry.ai
+- Website: https://stackfoundry.ai

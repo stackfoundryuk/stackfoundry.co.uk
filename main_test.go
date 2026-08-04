@@ -112,7 +112,7 @@ func TestContactFormSubmission(t *testing.T) {
 	}
 
 	// 3. Verify Success Component Rendered
-	expected := "Transmission Received"
+	expected := "Request Received"
 	if !strings.Contains(rr.Body.String(), expected) {
 		t.Errorf("Contact handler did not render success message: got body %v", rr.Body.String())
 	}

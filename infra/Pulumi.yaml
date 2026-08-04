@@ -1,0 +1,5 @@
+name: stackfoundry
+runtime: go
+description: StackFoundry AWS + Cloudflare infrastructure
+backend:
+  url: s3://stackfoundry-pulumi-state

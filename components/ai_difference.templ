@@ -1,0 +1,110 @@
+package components
+
+templ AIDifference() {
+  <section id="ai-difference" class="py-24 bg-base-100 border-t-2 border-base-content/5">
+    <div class="container mx-auto px-4">
+
+      // Section header
+      <div class="mb-16 max-w-3xl">
+        <h2 class="text-xs font-mono font-bold text-primary tracking-widest uppercase mb-4">&#47;&#47; The AI Difference</h2>
+        <h3 class="text-4xl md:text-5xl font-display font-bold uppercase leading-[0.9]">
+          Precision Tools.<br/>
+          <span class="text-base-content/30">Not a Mallet<br/>For Every Walnut.</span>
+        </h3>
+        <p class="mt-6 font-mono text-base-content/70 text-lg max-w-2xl">
+          Every consultancy now claims to be AI-powered. Most mean they used ChatGPT to
+          write a proposal faster. We mean something different: a principal engineer who
+          has built production systems at national security scale, running AI agents across
+          your entire delivery pipeline - with the judgement to know when AI is the right
+          tool, and the experience to know when it is not.
+        </p>
+      </div>
+
+      // Two column comparison grid
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-0 border-t-2 border-l-2 border-base-content/10 mb-16">
+
+        // Left column header
+        <div class="p-6 border-b-2 border-r-2 border-base-content/10 bg-base-200">
+          <p class="font-mono text-xs text-base-content/40 uppercase tracking-widest">&#47;&#47; What the market sells you</p>
+        </div>
+        // Right column header
+        <div class="p-6 border-b-2 border-r-2 border-base-content/10 bg-base-200">
+          <p class="font-mono text-xs text-primary uppercase tracking-widest">&#47;&#47; What StackFoundry AI delivers</p>
+        </div>
+
+        // Row 1 left
+        <div class="p-10 border-b-2 border-r-2 border-base-content/10 hover:bg-base-200 transition-all group flex flex-col">
+          <div class="font-mono text-xs text-base-content/30 mb-4 uppercase tracking-widest group-hover:text-base-content/50 transition-colors">Vibe-Coded Velocity</div>
+          <p class="font-mono text-sm text-base-content/60 leading-relaxed">
+            LLM-generated code shipped fast, reviewed never. Looks like progress.
+            Becomes a security liability and a full rewrite six months later.
+          </p>
+        </div>
+        // Row 1 right
+        <div class="p-10 border-b-2 border-r-2 border-base-content/10 hover:bg-base-200 transition-all group flex flex-col">
+          <div class="font-mono text-xs text-primary mb-4 uppercase tracking-widest opacity-70 group-hover:opacity-100 transition-opacity">Velocity With Value</div>
+          <p class="font-mono text-sm text-base-content/70 leading-relaxed">
+            AI generation at pace, with principal-level architecture review, security controls,
+            and release discipline at every step. You get speed and quality - not a forced
+            trade-off between them.
+          </p>
+        </div>
+
+        // Row 2 left
+        <div class="p-10 border-b-2 border-r-2 border-base-content/10 hover:bg-base-200 transition-all group flex flex-col">
+          <div class="font-mono text-xs text-base-content/30 mb-4 uppercase tracking-widest group-hover:text-base-content/50 transition-colors">The Mallet Problem</div>
+          <p class="font-mono text-sm text-base-content/60 leading-relaxed">
+            A complex, slow, expensive AI pipeline built to solve something a proven
+            algorithm handles in milliseconds - at a fraction of the cost and with
+            zero hallucination risk. We see this everywhere.
+          </p>
+        </div>
+        // Row 2 right
+        <div class="p-10 border-b-2 border-r-2 border-base-content/10 hover:bg-base-200 transition-all group flex flex-col">
+          <div class="font-mono text-xs text-primary mb-4 uppercase tracking-widest opacity-70 group-hover:opacity-100 transition-opacity">The Right Tool, Always</div>
+          <p class="font-mono text-sm text-base-content/70 leading-relaxed">
+            Sometimes the answer is an LLM pipeline. Sometimes it is OpenSearch, a decision
+            tree, or a well-indexed database query. We have the breadth of experience to
+            know the difference and the seniority to implement either at production scale.
+          </p>
+        </div>
+
+        // Row 3 left
+        <div class="p-10 border-b-2 border-r-2 border-base-content/10 hover:bg-base-200 transition-all group flex flex-col">
+          <div class="font-mono text-xs text-base-content/30 mb-4 uppercase tracking-widest group-hover:text-base-content/50 transition-colors">Snake Oil AI Strategy</div>
+          <p class="font-mono text-sm text-base-content/60 leading-relaxed">
+            Consultants who recommend vector databases, agent frameworks, and LLM pipelines
+            to every client - regardless of whether the problem actually warrants them.
+            They profit from your uncertainty.
+          </p>
+        </div>
+        // Row 3 right
+        <div class="p-10 border-b-2 border-r-2 border-base-content/10 hover:bg-base-200 transition-all group flex flex-col">
+          <div class="font-mono text-xs text-primary mb-4 uppercase tracking-widest opacity-70 group-hover:opacity-100 transition-opacity">Honest AI Assessment</div>
+          <p class="font-mono text-sm text-base-content/70 leading-relaxed">
+            MSc Computer Science. AWS AI certified. We model the latency, cost, and risk
+            profile of an AI approach against non-AI alternatives - and give you a
+            recommendation you can trust, not one that maximises our billing.
+          </p>
+        </div>
+
+      </div>
+
+      // Precision Principle callout
+      <div class="border-2 border-primary/30 p-10 bg-base-200 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-1 h-full bg-primary opacity-40"></div>
+        <p class="font-mono text-xs text-primary uppercase tracking-widest mb-4">&#47;&#47; The Precision Principle</p>
+        <p class="font-display text-2xl md:text-3xl font-bold uppercase leading-snug text-base-content/90 max-w-3xl">
+          We do not use a language model to compute 2 + 4.<br/>
+          <span class="text-base-content/40">A calculator already exists for that.</span>
+        </p>
+        <p class="font-mono text-sm text-base-content/60 mt-6 max-w-2xl leading-relaxed">
+          We forge exactly what your problem requires - no more, no less. That is what
+          separates a precision engineering consultancy from an AI solutions provider
+          that profits from unnecessary complexity.
+        </p>
+      </div>
+
+    </div>
+  </section>
+}

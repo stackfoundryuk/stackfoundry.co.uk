@@ -96,8 +96,8 @@ templ ContactForm() {
 		></div>
 		<div class="container mx-auto px-4 max-w-3xl relative z-10">
 			<div class="text-center mb-12">
-				<h2 class="text-4xl md:text-5xl font-display font-bold uppercase mb-4">Forge The Future</h2>
-				<p class="font-mono text-base-content/70 text-lg">Tell us what you're founding.</p>
+				<h2 class="text-4xl md:text-5xl font-display font-bold uppercase mb-4">Plan The Build</h2>
+				<p class="font-mono text-base-content/70 text-lg">Share your product, constraints, and delivery goals.</p>
 			</div>
 			// The "Industrial Panel" Container
 			<div id="contact_target" class="bg-base-200 p-2 border-2 border-base-content/10 shadow-xl">
@@ -134,12 +134,12 @@ templ ContactForm() {
 						// Subject Field
 						<div class="form-control w-full group">
 							<label class="label font-mono text-xs uppercase font-bold text-primary mb-2 group-focus-within:text-base-content transition-colors">
-								Mission
+								Engagement Type
 							</label>
 							<input
 								type="text"
 								name="subject"
-								placeholder="Subject (e.g. Rapid MVP Delivery)"
+								placeholder="Example: MVP Delivery, Architecture Audit, Fractional Lead"
 								maxlength="255"
 								class="input input-lg w-full rounded-none border-2 border-base-content/20 bg-base-100 focus:border-primary focus:outline-none transition-colors duration-300 placeholder:text-base-content/20"
 							/>
@@ -148,11 +148,11 @@ templ ContactForm() {
 						// Message Field
 						<div class="form-control w-full group">
 							<label class="label font-mono text-xs uppercase font-bold text-primary mb-2 group-focus-within:text-base-content transition-colors">
-								Mission Parameters
+								Context and Constraints
 							</label>
 							<textarea
 								name="message"
-								placeholder="We need to migrate to Go..."
+								placeholder="Current stack, timeline, team shape, risk/security constraints, and desired outcome..."
 								rows="5"
 								required
 								maxlength="3333"
@@ -166,7 +166,7 @@ templ ContactForm() {
 						// Initialize Button
 						<button class="relative btn btn-lg w-full rounded-none border-2 border-primary bg-transparent text-primary font-bold uppercase tracking-widest mt-2 overflow-hidden group hover:text-base-100 hover:border-primary transition-all duration-300">
 							<span class="relative z-10 flex items-center justify-center gap-2">
-								Initialize Sequence
+								Request Discovery Call
 								<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 									<path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
 								</svg>
@@ -198,11 +198,11 @@ templ ContactSuccess() {
       </div>
 
       // 3. Main Heading
-      <h3 class="text-3xl font-display font-bold uppercase text-primary mb-4 relative z-10">Transmission Received.</h3>
+      <h3 class="text-3xl font-display font-bold uppercase text-primary mb-4 relative z-10">Request Received.</h3>
       
       // 4. Status Text with Countdown
       <div class="font-mono text-base-content/70 max-w-md mx-auto leading-relaxed relative z-10">
-        <p class="mb-2">Stand by. Our engineers are analysing your request parameters.</p>
+        <p class="mb-2">Thanks for the context. We are reviewing your request and constraints.</p>
         <p class="text-sm uppercase tracking-widest opacity-80">
           Expected Response:
           <br/>

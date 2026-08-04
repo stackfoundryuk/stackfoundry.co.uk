@@ -211,3 +211,6 @@ public/css/output.css
 *_templ.go
 
 # End of https://www.toptal.com/developers/gitignore/api/go,visualstudiocode,node,git
+# Local package store / leftover CDK context
+.pnpm-store/
+cdk.context.json

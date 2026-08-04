@@ -1,61 +1,70 @@
 # Stack Foundry
 
-**Lean Architecture. High-Throughput Systems. Applied Intelligence.**
+**One Principal. AI-First Delivery. Squad-Level Output.**
 
-- Live site: <https://stackfoundry.co.uk>
+- Live site: <https://stackfoundry.ai>
+- Legacy domain: <https://stackfoundry.co.uk> (redirect target: `.ai`)
 
-This is the official homepage for **StackFoundry Ltd**, a UK-based software consulting company specializing in cutting through the chaos with rigorous coding.
+StackFoundry is a UK principal engineering consultancy focused on shipping production systems with **AI-first execution and senior-level rigor**.
 
-## The Architecture
+## Architecture
 
-We reject unnecessary complexity. This site is a **Self-Contained System (SCS)** built to demonstrate the power of modern, server-driven architectures.
+This site is a self-contained Go system, optimized for speed and low operational overhead.
 
-- **Go (1.23+):** The core logic. Fast, typed, and compiled to a single static binary.
-- **Templ:** Type-safe HTML templating. No runtime parsing errors.
-- **htmx:** Progressive enhancement for dynamic UI interactions with minimal client-side JavaScript.
-- **Tailwind CSS:** Utility-first styling, embedded directly into the binary.
-- **AWS Lambda (ARM64):** Deployed as a single function with zero idle costs.
+- **Go (1.24+):** Core app logic and API handlers.
+- **Templ:** Type-safe server-rendered UI components.
+- **HTMX + Tailwind:** Lightweight interactivity and styling.
+- **AWS Lambda (ARM64) + API Gateway:** Scale-to-zero compute.
+- **Cloudflare:** DNS, TLS edge, caching, and redirect control.
+- **Pulumi (Go):** Unified infrastructure-as-code for AWS and Cloudflare.
 
-## Getting Started
+## Infrastructure (Pulumi)
 
-### Prerequisites
+Pulumi fully replaces the old CDK setup.
+
+```bash
+infra/
+├── main.go             # Pulumi entrypoint
+├── aws_stack.go        # Lambda, API Gateway, ACM, budget
+├── cloudflare_stack.go # DNS records + zone settings
+├── Pulumi.yaml
+└── Pulumi.prod.yaml
+```
+
+The stack deploys:
+- `stackfoundry.ai` as the primary domain
+- DNS validation for ACM certs via Cloudflare
+- API Gateway custom domain mapping (phase 2)
+
+## Prerequisites
 
 - [Go](https://go.dev/) (1.24+)
-- [pnpm](https://pnpm.io/) (for Tailwind)
-- [xc](https://github.com/joerdav/xc) (Task runner)
-- [AWS CDK v2](https://docs.aws.amazon.com/cdk/v2/guide/home.html) and Node.js (for infra IaC)
-- [AWS CLI](https://aws.amazon.com/cli/) configured with appropriate credentials
-
-### Development
-
-1. Install dependencies: `pnpm install` & `go mod download`
-2. Install tools: `go install github.com/a-h/templ/cmd/templ@latest`
-3. Run the suite: `xc dev`
+- [pnpm](https://pnpm.io/)
+- [templ](https://templ.guide/) CLI
+- [Pulumi](https://www.pulumi.com/docs/iac/download-install/)
+- [AWS CLI](https://aws.amazon.com/cli/) configured
+- [xc](https://github.com/joerdav/xc) (task runner)
 
 ## Tasks
 
-This project uses [xc](https://github.com/joerdav/xc) to manage tasks.
+This project uses [xc](https://github.com/joerdav/xc) task blocks in this README.
 
 ### build
 
-Compiles the production binary. It minifies CSS, generates templates, and builds a static Go binary optimized for AWS Lambda (Linux ARM64) into a 'dist' folder.
+Compiles the production binary for Lambda into `dist/bootstrap`.
 
 ```bash
 pnpm install
 pnpm build:css
 templ generate
-
-# Create a clean distribution folder
 rm -rf dist
 mkdir -p dist
-
-# Build the binary directly into 'dist/bootstrap'
 GOOS=linux GOARCH=arm64 go build -tags lambda.norpc -ldflags="-s -w" -o dist/bootstrap .
 ```
 
 ### test
 
-Runs all Go tests across the application and infrastructure.
+Runs all Go tests across app and infrastructure.
 
 ```bash
 go test -v ./...
@@ -66,32 +75,71 @@ cd infra && go test -v ./...
 
 Requires: build
 
-Starts the development environment. Watches Tailwind and Templ files for changes, and runs the Go server with hot-reload.
+Starts local development (Tailwind watcher + Templ watcher + Go app).
 
 ```bash
 pnpm watch:css &
-
-templ generate --watch --proxy="http://localhost:8080" --cmd="go run ."
+templ generate --watch --proxy="http://localhost:8080" --cmd="env TEMPL_DEV_MODE=false go run ."
 ```
 
 ### diff
 
 Requires: build
 
-Run a CDK plan/diff to preview infrastructure changes.
+Pulumi preview for the currently selected stack.
 
 ```bash
-cd infra && cdk diff
+cd infra && pulumi preview
+```
+
+### diff-ai
+
+Requires: build
+
+Pulumi preview for prod stack.
+
+```bash
+cd infra && pulumi stack select prod && pulumi preview
 ```
 
 ### deploy
 
 Requires: test, build
 
-Deploy infrastructure via CDK.
+Deploys with custom domain enabled (normal steady-state deploy path).
 
 ```bash
-cd infra && export NODE_NO_WARNINGS=1 && cdk deploy
+cd infra && pulumi stack select prod && pulumi config set stackfoundry:enableCustomDomain true && pulumi up --stack prod
+```
+
+### deploy-ai
+
+Requires: test, build
+
+Alias for primary `.ai` deployment.
+
+```bash
+cd infra && pulumi stack select prod && pulumi config set stackfoundry:enableCustomDomain true && pulumi up --stack prod
+```
+
+### deploy-phase1
+
+Requires: test, build
+
+First-pass deploy for certificate/bootstrap (`enableCustomDomain=false`).
+
+```bash
+cd infra && pulumi stack select prod && pulumi config set stackfoundry:enableCustomDomain false && pulumi up --stack prod
+```
+
+### deploy-phase2
+
+Requires: test, build
+
+Second-pass deploy after ACM is issued (`enableCustomDomain=true`).
+
+```bash
+cd infra && pulumi stack select prod && pulumi config set stackfoundry:enableCustomDomain true && pulumi up --stack prod
 ```
 
 ### clean
@@ -104,3 +152,78 @@ rm -f public/css/output.css
 rm -fr node_modules
 rm -f components/*_templ.go
 ```
+
+## Deploy with Pulumi (Two-Phase)
+
+Use this flow for first-time or cert-related domain deploys.
+
+### Preflight config
+
+```bash
+cd infra
+pulumi stack select prod
+pulumi config set aws:region eu-west-2
+pulumi config set cloudflareZoneID 28170f6ed3495c645ea55b5e49be7d96
+# only if needed:
+# pulumi config set --secret cloudflare:apiToken <TOKEN>
+```
+
+### Phase 1: Bootstrap cert and base infra
+
+```bash
+xc test
+xc build
+cd infra
+pulumi config set stackfoundry:enableCustomDomain false
+pulumi up --stack prod
+```
+
+### Phase 2: Enable custom domain mapping
+
+Run once ACM certificate status is `ISSUED`.
+
+```bash
+cd infra
+pulumi config set stackfoundry:enableCustomDomain true
+pulumi up --stack prod
+```
+
+## Go-Live Verification Checklist
+
+1. In AWS ACM, confirm cert for `stackfoundry.ai`/`*.stackfoundry.ai` is `ISSUED`.
+2. In API Gateway, confirm custom domain and API mapping exist.
+3. In Cloudflare DNS, confirm:
+   - ACM validation CNAME is **DNS only** (not proxied).
+   - Root and `www` CNAMEs point to API Gateway target and are proxied.
+4. Verify HTTPS:
+   - `https://stackfoundry.ai` loads successfully.
+   - `https://www.stackfoundry.ai` resolves correctly.
+5. Smoke test contact form and application routes.
+
+## Rollback and Safety
+
+- If custom domain mapping fails, set `stackfoundry:enableCustomDomain=false` and run `pulumi up --stack prod`.
+- Keep Cloudflare DNS as source of truth during migration to avoid registrar-related downtime.
+- Use `pulumi preview` before each deploy window.
+
+## `.co.uk` Redirect Plan (Cloudflare DNS retained)
+
+Recommended fast path:
+
+1. Keep registrar as-is for now, keep DNS on Cloudflare.
+2. Add Cloudflare Redirect Rule:
+   - Match: `stackfoundry.co.uk/*` and `www.stackfoundry.co.uk/*`
+   - Action: `301` to `https://stackfoundry.ai/$1`
+3. Keep any required non-web records (for example MX/email) untouched.
+4. Validate:
+   - `curl -I https://stackfoundry.co.uk` returns `301`.
+   - Target resolves to `.ai` correctly.
+
+## Domain Ownership Clarification
+
+- **CloudFront is not a domain registrar.**
+- Registrar options:
+  - Keep current registrar + Cloudflare DNS (recommended now)
+  - Transfer registration to Route53 Registrar later if desired
+- Do registrar transfer only after `.ai` is stable and `.co.uk` redirect has baked in production.
+

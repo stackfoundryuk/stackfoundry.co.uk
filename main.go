@@ -25,7 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ses"
 	"github.com/aws/aws-sdk-go-v2/service/ses/types"
 
-	"stackfoundry.co.uk/components"
+	"stackfoundry/components"
 )
 
 //go:embed public/*
@@ -142,7 +142,10 @@ func RenderHTML(w http.ResponseWriter, r *http.Request, component templ.Componen
 		sessionID, _ := r.Context().Value(SessionKey).(string)
 		w.Header().Set("X-Session-ID", sessionID)
 	}
-	component.Render(r.Context(), w)
+	if err := component.Render(r.Context(), w); err != nil {
+		slog.Error("render_failed", slog.String("path", r.URL.Path), slog.Any("error", err))
+		http.Error(w, "Template render failed. Check server logs for details.", http.StatusInternalServerError)
+	}
 }
 
 func serveEmbeddedFile(w http.ResponseWriter, r *http.Request, fsys fs.FS, path string, contentType string) {

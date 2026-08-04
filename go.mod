@@ -1,4 +1,4 @@
-module stackfoundry.co.uk
+module stackfoundry
 
 go 1.25.6
 
