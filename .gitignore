@@ -210,4 +210,10 @@ public/css/output.css
 # Some teams commit these, but generating them on build is cleaner.
 *_templ.go
 
+# Local pnpm content-addressable store (never commit)
+.pnpm-store/
+
+# CDK context cache (machine-local; infra may move off CDK)
+cdk.context.json
+
 # End of https://www.toptal.com/developers/gitignore/api/go,visualstudiocode,node,git
